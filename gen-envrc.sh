@@ -9,6 +9,12 @@ if [ ! -f .env.template ]; then
   exit 1
 fi
 
+# Check if output file already exists
+if [ -f ".envrc" ]; then
+  echo "File .envrc already exists. Exiting."
+  exit 0
+fi
+
 # Create output file
 output_file=".envrc"
 echo "# Generated .envrc file with random values" > "$output_file"
