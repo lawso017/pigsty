@@ -61,6 +61,8 @@
     - name: preflight
       tags: [ app_check, preflight, always ]
       connection: local
+      vars:
+        ansible_python_interpreter: "{{ local_ansible_python_interpreter if local_ansible_python_interpreter is defined else omit }}"
       block:
         - name: validate app  parameter
           assert:
@@ -135,10 +137,22 @@
     # Launch app with make command                  [app_launch]
     #----------------------------------------------------------#
     # it may take a while to pull images, or very fast if you already have local image loaded, or proxy, mirror.
-    - name: launch app
-      tags: app_launch
-      shell:
-        cmd: make {{ app_args }}
-        chdir: "{{ app_dest }}"
+    # - name: launch app
+    #   tags: app_launch
+    #   shell:
+    #     cmd: make {{ app_args }}
+    #     chdir: "{{ app_dest }}"
 
-...
+    #----------------------------------------------------------#
+    # Launch app with docker_compose_v2 module      [app_launch]
+    #----------------------------------------------------------#
+    # This module correctly handles .env files and idempotency
+    - name: launch app via docker compose module
+      tags: app_launch
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dest }}"  # Correctly points to /opt/supabase
+        env_files:              # Specify the env file relative to project_src
+          - .env
+        state: present          # Equivalent to 'up -d'
+        remove_orphans: yes     # Clean up any old containers not in the compose file
+      become: yes               # Run docker compose with root privileges...
