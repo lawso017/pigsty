@@ -1,0 +1,46 @@
+#!/usr/bin/env ansible-playbook
+---
+#==============================================================#
+# File      :   grafana-postgres.yml
+# Desc      :   Upgrade grafana to use postgres once pg-util is installed
+# Ctime     :   2025-04-18
+# Mtime     :   2025-04-18
+# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Copyright :   2025  B.J. Lawson
+#==============================================================#
+
+- name: Configure Grafana to use PostgreSQL
+  hosts: infra
+  gather_facts: no
+  become: true
+  # Need to run serially to avoid database locking issues 
+  serial: 1 
+  vars:
+    grafana_database_type: postgres
+    grafana_database_host: pg-util
+    grafana_database_port: 5436
+    grafana_database_name: grafana
+    grafana_database_user: dbuser_grafana
+    grafana_database_password: "{{ lookup('env', 'DBUSER_GRAFANA') }}"
+  
+  tasks:
+    - name: Restart dnsmasq
+      systemd:
+        name: dnsmasq
+        state: restarted
+
+    - name: Update Grafana configuration
+      include_role:
+        name: infra
+        tasks_from: grafana
+      vars:
+        grafana_clean: false
+      tags:
+        - grafana_config
+    
+    - name: Restart Grafana service
+      systemd:
+        name: grafana-server
+        state: restarted
+        daemon_reload: yes
+      when: grafana_enabled|default(true)|bool
