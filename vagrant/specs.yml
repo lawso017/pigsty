@@ -1,0 +1,64 @@
+# pigsty/vagrant/specs.yml
+# Default Vagrant machine specifications
+
+specs:
+  - name: infra1
+    ip: 192.168.2.11
+    cpu: '1'
+    mem: '4096'
+    image: generic/ubuntu2204
+  - name: infra2
+    ip: 192.168.2.12
+    cpu: '1'
+    mem: '4096'
+    image: generic/ubuntu2204
+  - name: etcd1
+    ip: 192.168.2.21
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: etcd2
+    ip: 192.168.2.22
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: etcd3
+    ip: 192.168.2.23
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: minio1
+    ip: 192.168.2.31
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: pg-util1
+    ip: 192.168.2.41
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: pg-util2
+    ip: 192.168.2.42
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: pg-supa1
+    ip: 192.168.2.51
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: pg-supa2
+    ip: 192.168.2.52
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: pg-supa3
+    ip: 192.168.2.53
+    cpu: '1'
+    mem: '2048'
+    image: generic/ubuntu2204
+  - name: supa1
+    ip: 192.168.2.61
+    cpu: '1'
+    mem: '4096'
+    image: generic/ubuntu2204 

@@ -1,12 +1,35 @@
-# pigsty simple 1-node devbox for quick setup, demonstration, and development
+# We have customized the Vagrantfile to load server specs from an external YAML file.
+# This allows us to use the same Vagrantfile for different projects and environments.
+require 'yaml'
 
-Specs = [
+# --- Load Machine Specifications ---
 
-  { "name" => "meta"   , "ip" => "10.10.10.10" ,  "cpu" => "2" ,  "mem" => "4096" ,  "image" => "rockylinux/9"  }
+# Define the default specs file path (relative to this Vagrantfile)
+default_specs_file = File.join(File.dirname(__FILE__), 'specs.yml')
 
-]
+# Check for custom specs file path via environment variable
+custom_specs_file = ENV['PIGSTY_VAGRANT_SPECS']
 
+# Determine which specs file to load
+specs_file_to_load = default_specs_file
+if custom_specs_file
+  if File.exist?(custom_specs_file)
+    puts "INFO: Loading custom Vagrant specs from #{custom_specs_file}"
+    specs_file_to_load = custom_specs_file
+  else
+    puts "WARN: PIGSTY_VAGRANT_SPECS environment variable set to '#{custom_specs_file}', but file not found. Using default specs."
+  end
+end
 
+# Load the specs YAML file
+BEGIN { $VERBOSE = nil } # hide ruby warnings
+Specs = begin
+  YAML.load_file(specs_file_to_load)['specs'] || []
+rescue Errno::ENOENT
+  raise "ERROR: Specs file not found at '#{specs_file_to_load}'. Please create it or set PIGSTY_VAGRANT_SPECS correctly."
+rescue Psych::SyntaxError => e
+  raise "ERROR: Failed to parse specs file '#{specs_file_to_load}': #{e.message}"
+end
 
 # This is the Vagrantfile template for the default virtualbox provider
 
