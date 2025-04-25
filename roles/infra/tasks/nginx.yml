@@ -39,6 +39,7 @@
       with_dict: "{{ infra_portal|default({}) }}"
 
 - name: Create Cloudflare credentials file for Certbot
+  tags: nginx_cloudflare
   copy:
     dest: /etc/nginx/conf.d/cert/cloudflare.ini
     content: |
