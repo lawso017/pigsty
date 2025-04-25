@@ -118,6 +118,7 @@
     - name: install app resource to /opt
       tags: app_install
       copy: src="{{ app_src }}/" dest="/{{ app_dest }}/"
+      notify: restart docker compose
 
     #----------------------------------------------------------#
     # Configure app with .env                       [app_config]
@@ -132,6 +133,7 @@
         line: '{{ item.key | upper }}={{ item.value if item.value is not boolean else item.value | string | lower }}'
         create: yes
       loop: "{{ app_conf | dict2items }}"
+      notify: restart docker compose
 
     #----------------------------------------------------------#
     # Launch app with make command                  [app_launch]
@@ -156,3 +158,14 @@
         state: present          # Equivalent to 'up -d'
         remove_orphans: yes     # Clean up any old containers not in the compose file
       become: yes               # Run docker compose with root privileges...
+
+  #----------------------------------------------------------#
+  # Handlers: Run only if notified by a task               #
+  #----------------------------------------------------------#
+  handlers:
+    - name: restart docker compose
+      listen: restart docker compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dest }}"
+        state: present # Ensure state is present before restarting
+        recreate: always # Force stop and start of all services in the project
