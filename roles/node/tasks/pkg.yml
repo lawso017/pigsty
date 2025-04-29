@@ -68,15 +68,42 @@
         module_name: "{{ item }}"
       with_items: "{{ node_repo_modules.split(',') }}"
 
-    - name: make node local repo cache
+    - name: Make node local repo cache (DEB - apt update with retries)
       tags: node_repo_cache
-      shell: |
-        {% if os_package == 'rpm' %}
-        yum makecache;    
-        {% elif os_package == 'deb' %}
-        apt update
-        {% endif %}
-      args: { executable: /bin/bash }
+      ansible.builtin.apt:
+        update_cache: yes
+      register: apt_update_result
+      until: >
+        apt_update_result is succeeded or (
+          apt_update_result is failed and
+          'Could not get lock' not in (apt_update_result.msg | default('')) and
+          'Unable to lock directory' not in (apt_update_result.msg | default(''))
+        )
+      retries: 5
+      delay: 10
+      ignore_errors: yes # Ignore errors during the retry loop
+      changed_when: apt_update_result.changed
+      failed_when: apt_update_result is failed and (('Could not get lock' in (apt_update_result.msg | default(''))) or ('Unable to lock directory' in (apt_update_result.msg | default('')))) # Define final failure condition specifically for lock errors
+      when: os_package == 'deb'
+
+    - name: Fail if apt update ultimately failed after retries
+      tags: node_repo_cache
+      ansible.builtin.fail:
+        msg: "APT update failed after {{ retries }} retries due to persistent lock or other error. Last error: {{ apt_update_result.msg | default('Check task output') }}"
+      when:
+        - os_package == 'deb'
+        - apt_update_result is defined
+        - apt_update_result is failed
+      # No ignore_errors here, we want it to fail now
+
+    - name: Make node local repo cache (RPM - yum makecache)
+      tags: node_repo_cache
+      ansible.builtin.command:
+        cmd: yum makecache # Or use 'dnf makecache' if targeting newer RPM systems exclusively
+      register: yum_cache_result
+      changed_when: yum_cache_result.rc == 0 # Consider 'yum makecache' always changed or check output if needed
+      # No retry logic added for yum by default, but could be added similarly if needed
+      when: os_package == 'rpm'
 
 #--------------------------------------------------------------#
 # Install packages                                    [node_pkg]
