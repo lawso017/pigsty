@@ -809,7 +809,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
+  "timezone": "browser",
   "title": "Cadvisor exporter",
   "uid": "cadvisor-exporter",
   "version": 1,
