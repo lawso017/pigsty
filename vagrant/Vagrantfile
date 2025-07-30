@@ -14,7 +14,6 @@ custom_specs_file = ENV['PIGSTY_VAGRANT_SPECS']
 specs_file_to_load = default_specs_file
 if custom_specs_file
   if File.exist?(custom_specs_file)
-    puts "INFO: Loading custom Vagrant specs from #{custom_specs_file}"
     specs_file_to_load = custom_specs_file
   else
     puts "WARN: PIGSTY_VAGRANT_SPECS environment variable set to '#{custom_specs_file}', but file not found. Using default specs."
