@@ -41,3 +41,5 @@ files/license.lic
 test.yml
 dist/
 files/*.tgz
+
+CLAUDE.md
