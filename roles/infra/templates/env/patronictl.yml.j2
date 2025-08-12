@@ -5,7 +5,7 @@
 # Ctime     :   2020-05-12
 # Mtime     :   2022-12-04
 # Path      :   /etc/pigsty/patronictl.yml
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 # {{ ansible_managed }}
@@ -44,7 +44,7 @@ restapi:
     verify_client: optional  # none|optional|required
     username: '{{ patroni_username }}'
     password: '{{ patroni_password }}'
-  allowlist: [ {% for v in groups["infra"]|sort %}{% if not loop.first %}, {% endif %}{{ v }}{% endfor %} ]
+  allowlist: [ {% for v in groups["infra"]|default([])|sort %}{% if not loop.first %}, {% endif %}{{ v }}{% endfor %} ]
 
 #--------------------------------------------------------------#
 # ctl

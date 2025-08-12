@@ -1,0 +1,164 @@
+---
+#==============================================================#
+# File      :   full.yml
+# Desc      :   Pigsty Local Sandbox 4-node Demo Config
+# Ctime     :   2020-05-22
+# Mtime     :   2025-03-31
+# Docs      :   https://doc.pgsty.com/config
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
+# Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
+#==============================================================#
+
+
+all:
+
+  #==============================================================#
+  # Clusters, Nodes, and Modules
+  #==============================================================#
+  children:
+
+    # infra: monitor, alert, repo, etc..
+    infra:
+      hosts:
+        10.10.10.10: { infra_seq: 1 }
+      vars:
+        docker_enabled: true      # enabled docker with ./docker.yml
+        #docker_registry_mirrors: ["https://docker.1panel.live","https://docker.1ms.run","https://docker.xuanyuan.me","https://registry-1.docker.io"]
+
+    # etcd cluster for HA postgres DCS
+    etcd:
+      hosts:
+        10.10.10.10: { etcd_seq: 1 }
+      vars:
+        etcd_cluster: etcd
+
+    # minio (single node, used as backup repo)
+    minio:
+      hosts:
+        10.10.10.10: { minio_seq: 1 }
+      vars:
+        minio_cluster: minio
+
+    # postgres cluster: pg-meta
+    pg-meta:
+      hosts:
+        10.10.10.10: { pg_seq: 1, pg_role: primary }
+      vars:
+        pg_cluster: pg-meta
+        pg_users:
+          - { name: dbuser_meta ,password: DBUser.Meta     ,pgbouncer: true ,roles: [ dbrole_admin ]    ,comment: pigsty admin user }
+          - { name: dbuser_view ,password: DBUser.Viewer   ,pgbouncer: true ,roles: [ dbrole_readonly ] ,comment: read-only viewer for meta database }
+        pg_databases:
+          - { name: meta ,baseline: cmdb.sql ,comment: pigsty meta database ,schemas: [ pigsty ] }
+        pg_hba_rules:
+          - { user: dbuser_view , db: all ,addr: infra ,auth: pwd ,title: 'allow grafana dashboard access cmdb from infra nodes' }
+        pg_vip_enabled: true
+        pg_vip_address: 10.10.10.2/24
+        pg_vip_interface: eth1
+        node_crontab:  # make a full backup 1 am everyday
+          - '00 01 * * * postgres /pg/bin/pg-backup full'
+
+    # pgsql 3 node ha cluster: pg-test
+    pg-test:
+      hosts:
+        10.10.10.11: { pg_seq: 1, pg_role: primary }   # primary instance, leader of cluster
+        10.10.10.12: { pg_seq: 2, pg_role: replica }   # replica instance, follower of leader
+        10.10.10.13: { pg_seq: 3, pg_role: replica, pg_offline_query: true } # replica with offline access
+      vars:
+        pg_cluster: pg-test           # define pgsql cluster name
+        pg_users:  [{ name: test , password: test , pgbouncer: true , roles: [ dbrole_admin ] }]
+        pg_databases: [{ name: test }]
+        pg_vip_enabled: true
+        pg_vip_address: 10.10.10.3/24
+        pg_vip_interface: eth1
+        node_crontab:  # make a full backup on monday 1am, and an incremental backup during weekdays
+          - '00 01 * * 1 postgres /pg/bin/pg-backup full'
+          - '00 01 * * 2,3,4,5,6,7 postgres /pg/bin/pg-backup'
+
+    #----------------------------------#
+    # redis ms, sentinel, native cluster
+    #----------------------------------#
+    redis-ms: # redis classic primary & replica
+      hosts: { 10.10.10.10: { redis_node: 1 , redis_instances: { 6379: { }, 6380: { replica_of: '10.10.10.10 6379' } } } }
+      vars: { redis_cluster: redis-ms ,redis_password: 'redis.ms' ,redis_max_memory: 64MB }
+
+    redis-meta: # redis sentinel x 3
+      hosts: { 10.10.10.11: { redis_node: 1 , redis_instances: { 26379: { } ,26380: { } ,26381: { } } } }
+      vars:
+        redis_cluster: redis-meta
+        redis_password: 'redis.meta'
+        redis_mode: sentinel
+        redis_max_memory: 16MB
+        redis_sentinel_monitor: # primary list for redis sentinel, use cls as name, primary ip:port
+          - { name: redis-ms, host: 10.10.10.10, port: 6379 ,password: redis.ms, quorum: 2 }
+
+    redis-test: # redis native cluster: 3m x 3s
+      hosts:
+        10.10.10.12: { redis_node: 1 ,redis_instances: { 6379: { } ,6380: { } ,6381: { } } }
+        10.10.10.13: { redis_node: 2 ,redis_instances: { 6379: { } ,6380: { } ,6381: { } } }
+      vars: { redis_cluster: redis-test ,redis_password: 'redis.test' ,redis_mode: cluster, redis_max_memory: 32MB }
+
+
+  #==============================================================#
+  # Global Parameters
+  #==============================================================#
+  vars:
+    version: v3.6.0                   # pigsty version string
+    admin_ip: 10.10.10.10             # admin node ip address
+    region: default                   # upstream mirror region: default|china|europe
+    node_tune: oltp                   # node tuning specs: oltp,olap,tiny,crit
+    pg_conf: oltp.yml                 # pgsql tuning specs: {oltp,olap,tiny,crit}.yml
+    proxy_env:                        # global proxy env when downloading packages
+      no_proxy: "localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,*.pigsty,*.aliyun.com,mirrors.*,*.myqcloud.com,*.tsinghua.edu.cn"
+      # http_proxy:  # set your proxy here: e.g http://user:pass@proxy.xxx.com
+      # https_proxy: # set your proxy here: e.g http://user:pass@proxy.xxx.com
+      # all_proxy:   # set your proxy here: e.g http://user:pass@proxy.xxx.com
+    infra_portal:                     # domain names and upstream servers
+      home         : { domain: h.pigsty }
+      grafana      : { domain: g.pigsty ,endpoint: "${admin_ip}:3000" , websocket: true }
+      prometheus   : { domain: p.pigsty ,endpoint: "${admin_ip}:9090" }
+      alertmanager : { domain: a.pigsty ,endpoint: "${admin_ip}:9093" }
+      blackbox     : { endpoint: "${admin_ip}:9115" }
+      loki         : { endpoint: "${admin_ip}:3100" }
+      minio        : { domain: m.pigsty ,endpoint: "${admin_ip}:9001" ,scheme: https ,websocket: true }
+
+    #----------------------------------#
+    # MinIO Related Options
+    #----------------------------------#
+    #pgbackrest_repo:                  # pgbackrest repo: https://pgbackrest.org/configuration.html#section-repository
+    #  minio: ...                      # optional minio repo for pgbackrest ...
+    #    s3_key: pgbackrest            # minio user access key for pgbackrest
+    #    s3_key_secret: S3User.Backup  # minio user secret key for pgbackrest
+    #    cipher_pass: pgBackRest       # AES encryption password, default is 'pgBackRest'
+    # if you want to use minio as backup repo instead of 'local' fs, uncomment this, and configure `pgbackrest_repo`
+    pgbackrest_method: minio
+    node_etc_hosts: [ '10.10.10.10 h.pigsty a.pigsty p.pigsty g.pigsty sss.pigsty' ]
+
+    #----------------------------------#
+    # Credential: CHANGE THESE PASSWORDS
+    #----------------------------------#
+    #grafana_admin_username: admin
+    grafana_admin_password: pigsty
+    #pg_admin_username: dbuser_dba
+    pg_admin_password: DBUser.DBA
+    #pg_monitor_username: dbuser_monitor
+    pg_monitor_password: DBUser.Monitor
+    #pg_replication_username: replicator
+    pg_replication_password: DBUser.Replicator
+    #patroni_username: postgres
+    patroni_password: Patroni.API
+    #haproxy_admin_username: admin
+    haproxy_admin_password: pigsty
+    #minio_access_key: minioadmin
+    minio_secret_key: minioadmin
+
+    #----------------------------------#
+    # Repo, Node, Packages
+    #----------------------------------#
+    repo_remove: true                 # remove existing repo on admin node during repo bootstrap
+    node_repo_remove: true            # remove existing node repo for node managed by pigsty
+    repo_extra_packages: [ pg17-main ] #,pg17-core ,pg17-time ,pg17-gis ,pg17-rag ,pg17-fts ,pg17-olap ,pg17-feat ,pg17-lang ,pg17-type ,pg17-util ,pg17-func ,pg17-admin ,pg17-stat ,pg17-sec ,pg17-fdw ,pg17-sim ,pg17-etl]
+    pg_version: 17                    # default postgres version
+    #pg_extensions: [pg17-time ,pg17-gis ,pg17-rag ,pg17-fts ,pg17-feat ,pg17-lang ,pg17-type ,pg17-util ,pg17-func ,pg17-admin ,pg17-stat ,pg17-sec ,pg17-fdw ,pg17-sim ,pg17-etl ] #,pg17-olap]
+
+...

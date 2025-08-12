@@ -7,7 +7,7 @@ set -uo pipefail
 # Mtime     :   2022-12-17
 # Path      :   /pg/bin/pg-basebackup
 # Deps      :   pg_basebackup, psql, lz4, openssl, .pgpass
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 PROG_NAME="$(basename $0)"
@@ -141,14 +141,11 @@ function make_backup() {
 
 	if [[ ! -z "${key}" ]]; then
 		# if key is provided, encrypt with rc4 using openssl
-		pg_basebackup -w -d ${pg_url} -Xf -Ft -c fast -v -D - |
-			lz4 -q -z |
-			openssl enc -rc4 -k ${key} >"${backup_path}"
+		pg_basebackup -w -d ${pg_url} -Xf -Ft -c fast -v -D - | lz4 -q -z | openssl enc -rc4 -k ${key} >"${backup_path}"
 		# extract:  openssl enc -rc4 -d -k ${KEY} -in ${BKUP_FILE} | unlz4 -c | tar -xC ${DATA_DIR}
 		return $?
 	else
-		pg_basebackup -w -d ${pg_url} -Xf -Ft -c fast -v -D - |
-			lz4 -q -z >"${backup_path}"
+		pg_basebackup -w -d ${pg_url} -Xf -Ft -c fast -v -D - | lz4 -q -z >"${backup_path}"
 		# extract:  unlz4 ${BKUP_FILE} -c | tar -xC ${DATA_DIR}
 		return $?
 	fi

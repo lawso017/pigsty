@@ -2,8 +2,8 @@
 -- # File      :   supabase.sql
 -- # Desc      :   Pigsty self-hosting supabase baseline schema
 -- # Ctime     :   2021-04-21
--- # Mtime     :   2025-03-25
--- # License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+-- # Mtime     :   2025-07-01
+-- # License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 -- # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 -- ######################################################################
 
@@ -1851,6 +1851,42 @@ revoke create on schema auth from postgres;
 revoke all on auth.schema_migrations from dashboard_user, postgres;
 
 -- migrate:down
+
+
+
+
+----------------------------------------------------
+-- 20250605172253_grant_with_admin_to_postgres_16_and_above.sql
+----------------------------------------------------
+-- migrate:up
+DO $$
+    DECLARE
+        major_version INT;
+    BEGIN
+        SELECT current_setting('server_version_num')::INT / 10000 INTO major_version;
+
+        IF major_version >= 16 THEN
+            GRANT anon, authenticated, service_role, authenticator, pg_monitor, pg_read_all_data, pg_signal_backend TO postgres WITH ADMIN OPTION;
+        END IF;
+    END $$;
+
+-- migrate:down
+
+
+
+
+
+----------------------------------------------------
+-- 20250623125453_tmp_grant_storage_tables_to_postgres_with_grant_option.sql
+----------------------------------------------------
+-- migrate:up
+-- TODO: remove this migration once STORAGE-211 is completed
+-- DRI: bobbie
+grant all on storage.buckets, storage.objects to postgres with grant option;
+
+-- migrate:down
+
+
 
 
 

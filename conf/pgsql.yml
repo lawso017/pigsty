@@ -1,0 +1,74 @@
+---
+#==============================================================#
+# File      :   pgsql.yml
+# Desc      :   1-node PostgreSQL Config template
+# Ctime     :   2025-02-23
+# Mtime     :   2025-07-02
+# Docs      :   https://doc.pgsty.com/config
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
+# Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
+#==============================================================#
+
+# This is the config template for basical PostgreSQL Kernel.
+# Nothing special, just a basic setup with one node.
+# tutorial: https://doc.pgsty.com/pgsql/kernel/postgres
+#
+# Usage:
+#   curl https://repo.pigsty.io/get | bash
+#   ./configure -c pgsql
+#   ./install
+
+all:
+  children:
+    infra: { hosts: { 10.10.10.10: { infra_seq: 1 }} ,vars: { repo_enabled: false }}
+    etcd:  { hosts: { 10.10.10.10: { etcd_seq: 1  }} ,vars: { etcd_cluster: etcd  }}
+    #minio: { hosts: { 10.10.10.10: { minio_seq: 1 }} ,vars: { minio_cluster: minio }}
+
+    #----------------------------------------------#
+    # PostgreSQL Cluster
+    #----------------------------------------------#
+    pg-meta:
+      hosts:
+        10.10.10.10: { pg_seq: 1, pg_role: primary }
+      vars:
+        pg_cluster: pg-meta
+        pg_users:
+          - { name: dbuser_meta ,password: DBUser.Meta   ,pgbouncer: true ,roles: [dbrole_admin   ] ,comment: pigsty admin user }
+          - { name: dbuser_view ,password: DBUser.Viewer ,pgbouncer: true ,roles: [dbrole_readonly] ,comment: read-only viewer  }
+        pg_databases:
+          - { name: meta, baseline: cmdb.sql ,comment: pigsty meta database ,schemas: [pigsty] ,extensions: [ vector ]}
+        pg_hba_rules:
+          - { user: dbuser_view , db: all ,addr: infra ,auth: pwd ,title: 'allow grafana dashboard access cmdb from infra nodes' }
+        node_crontab: [ '00 01 * * * postgres /pg/bin/pg-backup full' ] # make a full backup every 1am
+
+  vars:
+    #----------------------------------------------#
+    # INFRA : https://doc.pgsty.com/infra/param
+    #----------------------------------------------#
+    version: v3.6.0                   # pigsty version string
+    admin_ip: 10.10.10.10             # admin node ip address
+    region: default                   # upstream mirror region: default,china,europe
+    infra_portal:                     # domain names and upstream servers
+      home         : { domain: h.pigsty }
+      grafana      : { domain: g.pigsty ,endpoint: "${admin_ip}:3000" , websocket: true }
+      prometheus   : { domain: p.pigsty ,endpoint: "${admin_ip}:9090" }
+      alertmanager : { domain: a.pigsty ,endpoint: "${admin_ip}:9093" }
+      blackbox     : { endpoint: "${admin_ip}:9115" }
+      loki         : { endpoint: "${admin_ip}:3100" }
+
+    #----------------------------------------------#
+    # NODE : https://doc.pgsty.com/node/param
+    #----------------------------------------------#
+    nodename_overwrite: false             # do not overwrite node hostname on single node mode
+    node_repo_modules: node,infra,pgsql # add these repos directly to the singleton node
+    node_tune: oltp                     # node tuning specs: oltp,olap,tiny,crit
+
+    #----------------------------------------------#
+    # PGSQL : https://doc.pgsty.com/pgsql/param
+    #----------------------------------------------#
+    pg_version: 17                      # Default PostgreSQL Major Version is 17
+    pg_conf: oltp.yml                   # pgsql tuning specs: {oltp,olap,tiny,crit}.yml
+    pg_packages: [ pgsql-main, pgsql-common ]   # pg kernel and common utils
+    #pg_extensions: [pg17-time ,pg17-gis ,pg17-rag ,pg17-fts ,pg17-feat ,pg17-lang ,pg17-type ,pg17-util ,pg17-func ,pg17-admin ,pg17-stat ,pg17-sec ,pg17-fdw ,pg17-sim ,pg17-etl ,pg17-olap]
+
+...

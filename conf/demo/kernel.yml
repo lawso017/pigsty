@@ -4,8 +4,8 @@
 # Desc      :   Pigsty 4 node for 4 pg forks
 # Ctime     :   2025-03-25
 # Mtime     :   2025-03-25
-# Docs      :   https://pigsty.io/docs/conf/fork
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Docs      :   https://doc.pgsty.com/config
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 
@@ -108,7 +108,7 @@ all:
           - { name: dbuser_monitor ,roles: [pg_monitor] ,pgbouncer: true ,parameters: {log_min_duration_statement: 1000 } ,pool_mode: session ,pool_connlimit: 8 ,comment: pgsql monitor user }
 
   vars:
-    version: v3.5.0                   # pigsty version string
+    version: v3.6.0                   # pigsty version string
     admin_ip: 10.10.10.10             # admin node ip address
     region: default                   # upstream mirror region: default|china|europe
     node_tune: oltp                   # node tuning specs: oltp,olap,tiny,crit

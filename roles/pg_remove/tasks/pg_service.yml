@@ -14,7 +14,7 @@
       shell: "cd /etc/haproxy; rm -rf {{ pg_cluster }}-*.cfg;"
       args: { executable: /bin/bash }
 
-    # if check fail on this step, haproxy will not be reloaded
+    # if the check fails on this step, haproxy will not be reloaded
     - name: check haproxy config before reload
       command: /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -c -q
 
@@ -26,6 +26,7 @@
 #--------------------------------------------------------------#
 # Remove Services from Dedicated HAProxy            [pg_service]
 #--------------------------------------------------------------#
+# remote service is only removed when primary instance is removed!
 - name: remove remote haproxy services
   tags: pg_service
   become: yes
@@ -41,7 +42,7 @@
       with_items: "{{ groups[pg_service_provider] }}"
 
     # WARNING: if centralized dedicate haproxy is used, it will fail if haproxy config is not valid!!
-    # if check fail on this step, haproxy will not be reloaded
+    # if the check fails on this step, haproxy will not be reloaded
     - name: check haproxy config before reload
       ignore_errors: false
       any_errors_fatal: true

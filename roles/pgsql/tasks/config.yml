@@ -6,11 +6,11 @@
   tags: pg_conf
   block:
 
-    # if pg_fs_main/node_data is not exists, use a hypothesis 40 GiB as estimation
+    # use a hypothesis 40 GiB as estimation if df command failed
     - name: get pgsql fs size
       shell: |
-        if [ -d "{{ pg_fs_main|default('/data') }}" ]; then
-          df {{ pg_fs_main|default('/data') }} --output=size | tail -1 | tr -d ' '
+        if [ -d "{{ pg_fs_main|default('/data/postgres') }}" ]; then
+          df {{ pg_fs_main|default('/data/postgres') }} --output=size | tail -1 | tr -d ' '
         elif [ -d "{{ node_data|default('/data') }}" ]; then
           df {{ node_data|default('/data') }} --output=size | tail -1 | tr -d ' '
         else
@@ -27,14 +27,17 @@
         msg: "Node={{ node_cpu }}c{{ node_mem_gb }}g {{ node_tune }}, Memory={{ (node_mem_mb|int / 400 | round(0, 'ceil'))|int * 100 }}MB of {{ node_mem_mb }}MB , Disk={{ [ (pg_fs_size_res.stdout|trim|int / 1048576)|round(0, 'ceil')|int , 1 ] | max }}GB {{ pg_storage_type|default('SSD') }} @ {{ pg_fs_main }}, PG Conf={{ pg_conf }}"
 
     - name: config patroni
-      template:
-        src={{ item.src }} dest={{ item.dest }} owner={{ item.owner }} group={{ item.group }} mode={{ item.mode }}
+      template: src={{ item.src }} dest={{ item.dest }} owner={{ item.owner }} group={{ item.group }} mode={{ item.mode }}
       vars:
         node_fs_bytes: "{{ pg_fs_size_res.stdout|trim|int * 1024 }}"
       with_items:
-        - { src: "{{ pg_conf }}" ,dest: "/pg/conf/{{ pg_instance }}.yml"     ,owner: "{{ pg_dbsu }}" ,group: "postgres", mode: "0750" }
-        - { src: "patroni.svc"   ,dest: "{{ systemd_dir }}/patroni.service"  ,owner: root, group: root, mode: "0644" }
-        - { src: "postgres.svc"  ,dest: "{{ systemd_dir }}/postgres.service" ,owner: root, group: root, mode: "0644" }
+        - { src: "{{ pg_conf }}"   ,dest: "/pg/conf/{{ pg_instance }}.yml"     ,owner: "{{ pg_dbsu }}" ,group: "postgres", mode: "0750" }
+        - { src: "patroni.svc"     ,dest: "{{ systemd_dir }}/patroni.service"  ,owner: root, group: root, mode: "0644" }
+        - { src: "postgres.svc"    ,dest: "{{ systemd_dir }}/postgres.service" ,owner: root, group: root, mode: "0644" }
+
+    - name: config pgbackrest for patroni
+      when: pgbackrest_enabled|bool
+      template: src=pgbackrest.conf dest=/etc/pgbackrest/pgbackrest.conf owner={{ pg_dbsu }} group=postgres mode=0600
 
     # /etc/patroni/patroni.yml & /pg/bin/patroni.yml -> /pg/conf/{{ pg_instance }}.yml
     - name: link patroni config
@@ -59,20 +62,4 @@
     - name: create pgsodium.getkey_script
       template: src={{ pgsodium_getkey_script|default('pgsodium_getkey') }} dest=/pg/bin/pgsodium_getkey owner="{{ pg_dbsu }}" group=postgres mode=0700
 
-#--------------------------------------------------------------#
-# Config PgBackrest PITR Config                   [pg_pitr_conf]
-#--------------------------------------------------------------#
-# this config is render for bootstrap / replica creation only
-- name: config pgbackrest for pitr
-  tags: pg_pitr_conf
-  when: pgbackrest_enabled|bool and pg_pitr is defined and pg_pitr is mapping
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: "{{ pg_dbsu }}"
-    group: "postgres"
-    mode: "{{ item.mode }}"
-  with_items:
-    - { src: "pitr.conf"  ,dest: "/pg/conf/pitr.conf", mode: "0600" }
-    - { src: "pg-restore" ,dest: "/pg/bin/pg-restore", mode: "0700" }
 ...

@@ -6,12 +6,12 @@ set -euo pipefail
 # Ctime     :   2023-10-15
 # Mtime     :   2024-12-17
 # Path      :   bin/boot-oss
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 PROG_NAME="$(basename $0)"
 PROG_DIR="$(cd $(dirname $0) && pwd)"
-VERSION=${1-'v3.5.0'}
+VERSION=${1-'v3.6.0'}
 
 #--------------------------------------------------------------#
 # Usage

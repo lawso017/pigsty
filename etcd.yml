@@ -4,9 +4,10 @@
 # File      :   etcd.yml
 # Desc      :   init etcd on special group etcd
 # Ctime     :   2022-11-10
-# Mtime     :   2023-09-30
+# Mtime     :   2025-07-22
 # Path      :   etcd.yml
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Docs      :   https://doc.pgsty.com/etcd/playbook
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 - name: ETCD INIT
@@ -31,15 +32,22 @@
 #     etcd_cluster: etcd
 #
 # 2. Run playbook: ./etcd.yml -l etcd
+#    It will create the cluster etcd
+#
+# 3. Add Member: define it in the inventory, add with:
+#    ./etcd.yml -l 10.10.10.13 -e etcd_init=existing
+#
+#--------------------------------------------------------------#
+# Utils
+#--------------------------------------------------------------#
+# bin/etcd-add               # create or update etcd cluster
+# bin/etcd-add 10.10.10.13   # expand etcd cluster with new member
 #
 #---------------------------------------------------------------
 # Tasks
 #---------------------------------------------------------------
 # etcd_assert     : generate minio identity
 # etcd_install    : install etcd rpm packages
-# etcd_clean      : cleanup existing etcd
-#   - etcd_check  : check etcd instance is running
-#   - etcd_purge  : remove running etcd instance & data
 # etcd_dir        : create etcd data & conf dir
 # etcd_config     : generate etcd config
 #   - etcd_conf   : generate etcd main config

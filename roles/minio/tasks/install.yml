@@ -2,6 +2,7 @@
 #--------------------------------------------------------------#
 # Create Minio OS user & Group                   [minio_os_user]
 #--------------------------------------------------------------#
+# The OS group name is fixed to `minio`, and the username is customizable
 - name: create minio user group
   tags: minio_os_user
   block:
@@ -14,6 +15,7 @@
 #--------------------------------------------------------------#
 # Install Minio Package                              [minio_pkg]
 #--------------------------------------------------------------#
+# `minio` and `mcli` packages are required (from pigsty-infra repo)
 - name: install minio package
   tags: minio_pkg
   package: name={{ item }} state=present
@@ -21,26 +23,10 @@
 
 
 #--------------------------------------------------------------#
-# Purge Minio Directories                          [minio_clean]
-#--------------------------------------------------------------#
-- name: clean minio data dir
-  tags: minio_clean
-  when: minio_clean|bool
-  ignore_errors: true
-  block:
-
-    - name: stop minio service
-      systemd: name=minio state=stopped enabled=no daemon_reload=yes
-
-    - name: purge minio data dir
-      tags: minio_purge
-      shell: find {{ item }} -mindepth 1 -delete
-      with_items: "{{ minio_data_dirs.split(',') }}"
-
-
-#--------------------------------------------------------------#
 # Create Minio Directories                           [minio_dir]
 #--------------------------------------------------------------#
+# for a serious production deployment, you should make sure these
+# data directories are properly mounted to a persistent storage
 - name: create minio directories
   tags: minio_dir
   block:

@@ -1,43 +1,47 @@
 ---
 #==============================================================#
 # File      :   citus.yml
-# Desc      :   pigsty citus testing environment
+# Desc      :   1-node Citus (Distributive) Config Template
 # Ctime     :   2020-05-22
-# Mtime     :   2025-01-23
-# Docs      :   https://pigsty.io/docs/conf/citus/
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Mtime     :   2025-07-02
+# Docs      :   https://doc.pgsty.com/config
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 
+# This is the config template for Citus Distributive Cluster
+# tutorial: https://doc.pgsty.com/pgsql/kernel/citus
+#
+# Usage:
+#   curl https://repo.pigsty.io/get | bash
+#   ./configure -c citus
+#   ./install
 
 all:
   children:
+    infra: { hosts: { 10.10.10.10: { infra_seq: 1 }} ,vars: { repo_enabled: false }}
+    etcd:  { hosts: { 10.10.10.10: { etcd_seq: 1  }} ,vars: { etcd_cluster: etcd  }}
+    #minio: { hosts: { 10.10.10.10: { minio_seq: 1 }} ,vars: { minio_cluster: minio }}
 
-    # infra singleton for repo, monitoring,...
-    infra:
+    #----------------------------------------------#
+    # pg-citus: 10 node citus cluster
+    #----------------------------------------------#
+    pg-citus: # the citus group contains 5 clusters
       hosts:
-        10.10.10.10: { infra_seq: 1 }
-
-    # etcd singleton for HA postgres DCS
-    etcd:
-      hosts:
-        10.10.10.10: { etcd_seq: 1 }
-      vars:
-        etcd_cluster: etcd
-
-    # citus 4-node, 3-group example cluster
-    pg-citus:
-      hosts:
-        10.10.10.10: { pg_group: 0, pg_cluster: pg-citus0 ,pg_vip_address: 10.10.10.2/24 ,pg_seq: 1, pg_role: primary }
-        10.10.10.11: { pg_group: 0, pg_cluster: pg-citus0 ,pg_vip_address: 10.10.10.2/24 ,pg_seq: 2, pg_role: replica }
-        10.10.10.12: { pg_group: 1, pg_cluster: pg-citus1 ,pg_vip_address: 10.10.10.3/24 ,pg_seq: 1, pg_role: primary }
-        10.10.10.13: { pg_group: 2, pg_cluster: pg-citus2 ,pg_vip_address: 10.10.10.4/24 ,pg_seq: 1, pg_role: primary }
+        10.10.10.10: { pg_group: 0, pg_cluster: pg-citus0 ,pg_vip_address: 10.10.10.60/24 ,pg_seq: 0, pg_role: primary }
+        #10.10.10.11: { pg_group: 0, pg_cluster: pg-citus0 ,pg_vip_address: 10.10.10.60/24 ,pg_seq: 1, pg_role: replica }
+        #10.10.10.12: { pg_group: 1, pg_cluster: pg-citus1 ,pg_vip_address: 10.10.10.61/24 ,pg_seq: 0, pg_role: primary }
+        #10.10.10.13: { pg_group: 1, pg_cluster: pg-citus1 ,pg_vip_address: 10.10.10.61/24 ,pg_seq: 1, pg_role: replica }
+        #10.10.10.14: { pg_group: 2, pg_cluster: pg-citus2 ,pg_vip_address: 10.10.10.62/24 ,pg_seq: 0, pg_role: primary }
+        #10.10.10.15: { pg_group: 2, pg_cluster: pg-citus2 ,pg_vip_address: 10.10.10.62/24 ,pg_seq: 1, pg_role: replica }
+        #10.10.10.16: { pg_group: 3, pg_cluster: pg-citus3 ,pg_vip_address: 10.10.10.63/24 ,pg_seq: 0, pg_role: primary }
+        #10.10.10.17: { pg_group: 3, pg_cluster: pg-citus3 ,pg_vip_address: 10.10.10.63/24 ,pg_seq: 1, pg_role: replica }
+        #10.10.10.18: { pg_group: 4, pg_cluster: pg-citus4 ,pg_vip_address: 10.10.10.64/24 ,pg_seq: 0, pg_role: primary }
+        #10.10.10.19: { pg_group: 4, pg_cluster: pg-citus4 ,pg_vip_address: 10.10.10.64/24 ,pg_seq: 1, pg_role: replica }
       vars:
         pg_mode: citus                            # pgsql cluster mode: citus
         pg_shard: pg-citus                        # citus shard name: pg-citus
         pg_primary_db: citus                      # primary database used by citus
-        pg_vip_enabled: true                      # enable vip for citus cluster
-        pg_vip_interface: eth1                    # vip interface for all members
         pg_dbsu_password: DBUser.Postgres         # enable dbsu password access for citus
         pg_extensions: [ citus, postgis, pgvector, topn, pg_cron, hll ]  # install these extensions
         pg_libs: 'citus, pg_cron, pg_stat_statements' # citus will be added by patroni automatically
@@ -47,16 +51,18 @@ all:
           cron.database_name: citus
           citus.node_conninfo: 'sslrootcert=/pg/cert/ca.crt sslmode=verify-full'
         pg_hba_rules:
-          - { user: 'all' ,db: all  ,addr: 127.0.0.1/32  ,auth: ssl   ,title: 'all user ssl access from localhost' }
-          - { user: 'all' ,db: all  ,addr: intra         ,auth: ssl   ,title: 'all user ssl access from intranet'  }
+          - { user: 'all' ,db: all  ,addr: 127.0.0.1/32  ,auth: ssl ,title: 'all user ssl access from localhost' }
+          - { user: 'all' ,db: all  ,addr: intra         ,auth: ssl ,title: 'all user ssl access from intranet'  }
+        pg_vip_enabled: true                      # enable vip for citus cluster
+        pg_vip_interface: eth1                    # vip interface for all members (you can override this in each host)
 
   vars:                               # global variables
-    version: v3.5.0                   # pigsty version string
+    #----------------------------------------------#
+    # INFRA : https://doc.pgsty.com/infra/param
+    #----------------------------------------------#
+    version: v3.6.0                   # pigsty version string
     admin_ip: 10.10.10.10             # admin node ip address
-    region: default                   # upstream mirror region: default|china|europe
-    node_tune: tiny                   # node tuning specs: oltp,olap,tiny,crit
-    pg_conf: tiny.yml                 # pgsql tuning specs: {oltp,olap,tiny,crit}.yml
-    #docker_registry_mirrors: ["https://docker.1ms.run", "https://docker.m.daocloud.io"]
+    region: default                   # upstream mirror region: default,china,europe
     infra_portal:                     # domain names and upstream servers
       home         : { domain: h.pigsty }
       grafana      : { domain: g.pigsty ,endpoint: "${admin_ip}:3000" , websocket: true }
@@ -65,7 +71,19 @@ all:
       blackbox     : { endpoint: "${admin_ip}:9115" }
       loki         : { endpoint: "${admin_ip}:3100" }
 
-    pg_version: 17
-    repo_extra_packages: [ pgsql-main, citus, postgis, pgvector, pg_cron, hll, topn ]
+    #----------------------------------------------#
+    # NODE : https://doc.pgsty.com/node/param
+    #----------------------------------------------#
+    nodename_overwrite: true            # overwrite hostname since this is a multi-node tempalte
+    node_repo_modules: node,infra,pgsql # add these repos directly to the singleton node
+    node_tune: oltp                     # node tuning specs: oltp,olap,tiny,crit
 
+    #----------------------------------------------#
+    # PGSQL : https://doc.pgsty.com/pgsql/param
+    #----------------------------------------------#
+    pg_version: 17                      # Default PostgreSQL Major Version is 17
+    pg_conf: oltp.yml                   # pgsql tuning specs: {oltp,olap,tiny,crit}.yml
+    pg_packages: [ pgsql-main, pgsql-common ]   # pg kernel and common utils
+    #pg_extensions: [pg17-time ,pg17-gis ,pg17-rag ,pg17-fts ,pg17-feat ,pg17-lang ,pg17-type ,pg17-util ,pg17-func ,pg17-admin ,pg17-stat ,pg17-sec ,pg17-fdw ,pg17-sim ,pg17-etl ,pg17-olap]
+    #repo_extra_packages: [ pgsql-main, citus, postgis, pgvector, pg_cron, hll, topn ]
 ...

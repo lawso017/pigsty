@@ -4,8 +4,8 @@
 # Desc      :   Pigsty 3-node security enhance template
 # Ctime     :   2020-05-22
 # Mtime     :   2025-01-23
-# Docs      :   https://pigsty.io/docs/conf/safe
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Docs      :   https://doc.pgsty.com/config
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 
@@ -67,21 +67,21 @@ all:
         pg_vip_interface: eth1
 
     # OPTIONAL delayed cluster for pg-meta
-    pg-meta-delay: # delayed instance for pg-meta (1 hour ago)
-      hosts: { 10.10.10.13: { pg_seq: 1, pg_role: primary, pg_upstream: 10.10.10.10, pg_delay: 1h } }
-      vars: { pg_cluster: pg-meta-delay }
+    #pg-meta-delay: # delayed instance for pg-meta (1 hour ago)
+    #  hosts: { 10.10.10.13: { pg_seq: 1, pg_role: primary, pg_upstream: 10.10.10.10, pg_delay: 1h } }
+    #  vars: { pg_cluster: pg-meta-delay }
 
 
   ####################################################################
   #                          Parameters                              #
   ####################################################################
   vars: # global variables
-    version: v3.5.0                   # pigsty version string
+    version: v3.6.0                   # pigsty version string
     admin_ip: 10.10.10.10             # admin node ip address
     region: default                   # upstream mirror region: default|china|europe
     node_tune: oltp                   # node tuning specs: oltp,olap,tiny,crit
     pg_conf: oltp.yml                 # pgsql tuning specs: {oltp,olap,tiny,crit}.yml
-    #docker_registry_mirrors: ["https://docker.1ms.run", "https://docker.m.daocloud.io"]
+    #docker_registry_mirrors: ["https://docker.1panel.live","https://docker.1ms.run","https://docker.xuanyuan.me","https://registry-1.docker.io"]
     patroni_ssl_enabled: true         # secure patroni RestAPI communications with SSL?
     pgbouncer_sslmode: require        # pgbouncer client ssl mode: disable|allow|prefer|require|verify-ca|verify-full, disable by default
     pg_default_service_dest: postgres # default service destination to postgres instead of pgbouncer

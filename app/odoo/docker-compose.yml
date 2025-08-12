@@ -7,12 +7,11 @@
 # Ctime     :   2024-09-19
 # Mtime     :   2025-01-12
 # Path      :   app/odoo/docker-compose.yml
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 # Image:    https://hub.docker.com/_/odoo
-# Source:   https://github.com/supabase/supabase/blob/master/docker/docker-compose.yml
-# Tutorial: https://pigsty.io/docs/software/odoo/
+# Tutorial: https://doc.pgsty.com/app/odoo
 
 
 name: odoo

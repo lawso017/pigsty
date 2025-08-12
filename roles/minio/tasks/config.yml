@@ -1,33 +1,26 @@
 ---
 #--------------------------------------------------------------#
-# Config Minio                                    [minio_config]
+# Config Minio                                      [minio_conf]
 #--------------------------------------------------------------#
 - name: render minio config
   tags: minio_conf
-  block:
-
-    - name: render minio config
-      template:
-        src: minio.default.j2
-        dest: /etc/default/minio
-        owner: root
-        group: minio
-        mode: 0644
-
-    - name: create minio systemd service
-      template: src=minio.service.j2 dest={{ systemd_dir }}/minio.service owner=root group=root
+  template: src={{ item.src }} dest={{ item.dest }} owner={{ item.owner }} group={{ item.group }} mode={{ item.mode }}
+  with_items:
+    - { src: "minio.default" , dest: "/etc/default/minio"              ,owner: root, group: minio ,mode: '0644' }
+    - { src: "minio.service" , dest: "{{ systemd_dir }}/minio.service" ,owner: root, group: root  ,mode: '0644' }
 
 
 #--------------------------------------------------------------#
-# Issue minio certs                           [minio_cert_issue]
+# Issue MinIO Certs                           [minio_cert_issue]
 #--------------------------------------------------------------#
 - name: generate certs for minio
   tags: [ minio_cert , minio_cert_issue ]
+  when: minio_https|bool
   become: no
   delegate_to: localhost
   block:
 
-    # reuse existing private key if already exists
+    # reuse the existing private key if already exists
     - name: generate minio private key
       openssl_privatekey:
         path: files/pki/minio/{{ minio_instance }}.key
@@ -62,20 +55,28 @@
 
 
 #--------------------------------------------------------------#
-# Copy minio certs                             [minio_cert_copy]
+# Copy MinIO Certs                             [minio_cert_copy]
 #--------------------------------------------------------------#
 - name: copy minio certs
   tags: [ minio_cert, minio_cert_copy ]
   become: yes
   block:
     - name: create minio cert dir
+      when: minio_https|bool
       file: path=/home/{{ minio_user }}/.minio/certs/CAs state=directory owner={{ minio_user }} group=minio mode=0750
-    - name: copy minio ca file
-      copy: src="files/pki/ca/ca.crt" dest="/home/{{ minio_user }}/.minio/certs/CAs/ca.crt" owner={{ minio_user }} group=minio mode=0644
-    - name: copy minio server cert
-      copy: src="files/pki/minio/{{ minio_instance }}.crt" dest="/home/{{ minio_user }}/.minio/certs/public.crt" owner={{ minio_user }} group=minio mode=0644
-    - name: copy minio server key
-      copy: src="files/pki/minio/{{ minio_instance }}.key" dest="/home/{{ minio_user }}/.minio/certs/private.key" owner={{ minio_user }} group=minio mode=0600
+
+    - name: copy minio certificates
+      when: minio_https|bool
+      copy: src={{ item.src }} dest={{ item.dest }} owner={{ item.owner }} group={{ item.group|default(item.owner) }} mode={{ item.mode }}
+      with_items:
+        - { src: "files/pki/ca/ca.crt"                       ,dest: "/home/{{ minio_user }}/.minio/certs/CAs/ca.crt"  ,owner: "{{ minio_user }}", group: "minio" ,mode: "0644" }
+        - { src: "files/pki/minio/{{ minio_instance }}.crt"  ,dest: "/home/{{ minio_user }}/.minio/certs/public.crt"  ,owner: "{{ minio_user }}", group: "minio" ,mode: "0644" }
+        - { src: "files/pki/minio/{{ minio_instance }}.key"  ,dest: "/home/{{ minio_user }}/.minio/certs/private.key" ,owner: "{{ minio_user }}", group: "minio" ,mode: "0600" }
+
+    - name: disable minio https by removing certs
+      when: not minio_https|bool
+      file: path=/home/{{ minio_user }}/.minio/certs state=absent
+      ignore_errors: yes
 
 
 #--------------------------------------------------------------#
@@ -98,7 +99,7 @@
 - name: write minio instance dns to infra nameserver
   tags: [ minio_dns , register_dns ]
   delegate_to: '{{ item }}'
-  with_items: "{{ groups['infra'] }}"
+  with_items: "{{ groups['infra'] | default([]) }}"
   copy:
     dest: /etc/hosts.d/{{ minio_instance }}
     mode: 0644
@@ -114,7 +115,7 @@
   delegate_to: '{{ item }}'
   run_once: true
   ignore_errors: true
-  with_items: '{{ groups["infra"] }}'
+  with_items: '{{ groups["infra"] | default([]) }}'
   systemd: name=dnsmasq state=reloaded enabled=yes daemon_reload=yes
 
 ...

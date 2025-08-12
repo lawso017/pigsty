@@ -1,10 +1,10 @@
 ---
 #==============================================================#
 # File      :   datasource.yml
-# Mtime     :   2022-12-04
+# Mtime     :   2025-05-25
 # Desc      :   Grafana Data Source Provisioner Definition
 # Path      :  /etc/grafana/provisioning/datasources/pigsty.yml
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 
@@ -15,6 +15,7 @@ deleteDatasources:
   - { name: Prometheus , orgId: 1 }
   - { name: Meta       , orgId: 1 }
   - { name: Loki       , orgId: 1 }
+  - { name: Static     , orgId: 1 }
 
 # install following data sources
 datasources:
@@ -49,7 +50,7 @@ datasources:
       "connMaxLifetime": 14400,
       "maxIdleConns": 10,
       "maxOpenConns": 64,
-      "postgresVersion": {{ pg_version }}00,
+      "postgresVersion": {% if pg_version is defined %}{% if pg_version|int >= 15 %}15{% else %}{{ pg_version }}{% endif %}{% else %}10{% endif %}00,
       "sslmode": "require",
       "tlsAuth": false,
       "tlsAuthWithCACert": false
@@ -64,4 +65,11 @@ datasources:
     url: http://127.0.0.1:3100
     access: proxy
     editable: true
+
+  # Pigsty Static Datasource
+  - name: Static
+    type: marcusolsson-static-datasource
+    uid: ds-static
+    editable: true
+
 ...

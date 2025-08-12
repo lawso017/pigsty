@@ -4,8 +4,8 @@
 # Desc      :   pigsty config for redis clusters
 # Ctime     :   2022-11-09
 # Mtime     :   2023-09-14
-# Docs      :   https://pigsty.io/docs/setup/config/
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Docs      :   https://doc.pgsty.com/config
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 
@@ -38,7 +38,7 @@ all:
 
 
   vars:
-    version: v3.5.0                   # pigsty version string
+    version: v3.6.0                   # pigsty version string
     admin_ip: 10.10.10.10             # admin node ip address
     region: default                   # upstream mirror region: default|china|europe
 

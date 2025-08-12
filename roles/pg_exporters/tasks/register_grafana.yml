@@ -18,7 +18,6 @@
           {
             "type": "postgres",
             "access": "proxy",
-            "uid": "{{ name }}",
             "name": "{{ name }}",
             "url": "{{ host }}:{{ port }}",
             "user": "{{ username }}",

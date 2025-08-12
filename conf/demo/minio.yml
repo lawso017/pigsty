@@ -4,8 +4,8 @@
 # Desc      :   pigsty: 4 node x 4 disk MNMD minio clusters
 # Ctime     :   2023-01-07
 # Mtime     :   2025-03-23
-# Docs      :   https://pigsty.io/docs/conf/minio
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Docs      :   https://doc.pgsty.com/config
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 
@@ -40,10 +40,14 @@ all:
       vars:
         minio_cluster: minio
         minio_data: '/data{1...4}'
-        minio_buckets: [ { name: pgsql }, { name: infra }, { name: redis } ]
-        minio_users:
-          - { access_key: dba , secret_key: S3User.DBA, policy: consoleAdmin }
-          - { access_key: pgbackrest , secret_key: S3User.SomeNewPassWord , policy: readwrite }
+        minio_buckets:                    # list of minio bucket to be created
+          - { name: pgsql }
+          - { name: meta ,versioning: true }
+          - { name: data }
+        minio_users:                      # list of minio user to be created
+          - { access_key: pgbackrest  ,secret_key: S3User.Backup ,policy: pgsql }
+          - { access_key: s3user_meta ,secret_key: S3User.Meta   ,policy: meta  }
+          - { access_key: s3user_data ,secret_key: S3User.Data   ,policy: data  }
 
         # bind a node l2 vip (10.10.10.9) to minio cluster (optional)
         node_cluster: minio
@@ -69,7 +73,7 @@ all:
               - { name: minio-4 ,ip: 10.10.10.13 ,port: 9000 ,options: 'check-ssl ca-file /etc/pki/ca.crt check port 9000' }
 
   vars:
-    version: v3.5.0                   # pigsty version string
+    version: v3.6.0                   # pigsty version string
     admin_ip: 10.10.10.10             # admin node ip address
     region: default                   # upstream mirror region: default|china|europe
     infra_portal:                     # domain names and upstream servers

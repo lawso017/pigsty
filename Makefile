@@ -2,26 +2,37 @@
 # File      :   Makefile
 # Desc      :   pigsty shortcuts
 # Ctime     :   2019-04-13
-# Mtime     :   2025-03-29
+# Mtime     :   2025-07-01
 # Path      :   Makefile
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 # pigsty version string
-VERSION?=v3.5.0
+VERSION?=v3.6.0
+
+# detect architecture
+ARCH?=x86_64
+UNAME_ARCH := $(shell uname -m)
+ifeq ($(UNAME_ARCH),arm64)
+	ARCH := aarch64
+else ifeq ($(UNAME_ARCH),aarch64)
+	ARCH := aarch64
+else
+	ARCH := $(UNAME_ARCH)
+endif
 
 # variables
 SRC_PKG=pigsty-$(VERSION).tgz
 APP_PKG=pigsty-app-$(VERSION).tgz
 DOCKER_PKG=pigsty-docker-$(VERSION).tgz
-EL7_PKG=pigsty-pkg-$(VERSION).el7.x86_64.tgz
-EL8_PKG=pigsty-pkg-$(VERSION).el8.x86_64.tgz
-EL9_PKG=pigsty-pkg-$(VERSION).el9.x86_64.tgz
-D11_PKG=pigsty-pkg-$(VERSION).d11.x86_64.tgz
-D12_PKG=pigsty-pkg-$(VERSION).d12.x86_64.tgz
-U20_PKG=pigsty-pkg-$(VERSION).u20.x86_64.tgz
-U22_PKG=pigsty-pkg-$(VERSION).u22.x86_64.tgz
-U24_PKG=pigsty-pkg-$(VERSION).u24.x86_64.tgz
+EL7_PKG=pigsty-pkg-$(VERSION).el7.${ARCH}.tgz
+EL8_PKG=pigsty-pkg-$(VERSION).el8.${ARCH}.tgz
+EL9_PKG=pigsty-pkg-$(VERSION).el9.${ARCH}.tgz
+D11_PKG=pigsty-pkg-$(VERSION).d11.${ARCH}.tgz
+D12_PKG=pigsty-pkg-$(VERSION).d12.${ARCH}.tgz
+U20_PKG=pigsty-pkg-$(VERSION).u20.${ARCH}.tgz
+U22_PKG=pigsty-pkg-$(VERSION).u22.${ARCH}.tgz
+U24_PKG=pigsty-pkg-$(VERSION).u24.${ARCH}.tgz
 META?=10.10.10.10
 PKG?=""
 #PKG?=pro
@@ -40,6 +51,7 @@ endif
 # run with nopass SUDO user (or root) on CentOS 7.x node
 default: tip
 tip:
+	echo $(ARCH)
 	@echo "# Run on Linux node with nopass sudo & ssh access"
 	@echo 'curl -fsSL https://repo.pigsty.io/get | bash'
 	@echo "./bootstrap     # prepare local repo & ansible"
@@ -80,7 +92,7 @@ install:
 #  (2). Download      :   shortcuts for downloading resources
 #  (3). Configure     :   shortcuts for configure pigsty
 #  (4). Install       :   shortcuts for running playbooks
-#  (5). Sandbox       :   shortcuts for mange sandbox vm nodes
+#  (5). Sandbox       :   shortcuts for manage sandbox vm nodes
 #  (6). Testing       :   shortcuts for testing features
 #  (7). Develop       :   shortcuts for dev purpose
 #  (8). Release       :   shortcuts for release and publish
@@ -92,7 +104,7 @@ install:
 ###############################################################
 #                      2. Download                            #
 ###############################################################
-# There are two things needs to be downloaded:
+# There are two things that need to be downloaded:
 #    pigsty.tgz    :   source code
 #    pkg.tgz       :   offline rpm packages (optional)
 #
@@ -106,7 +118,7 @@ src:
 ###############################################################
 #                      3. Configure                           #
 ###############################################################
-# there are several things needs to be checked before install
+# there are several things that need to be checked before install
 # use ./configure or `make config` to run interactive wizard
 # it will install ansible (from offline rpm repo if available)
 
@@ -160,6 +172,7 @@ prometheus:
 # init grafana
 grafana:
 	./infra.yml --tags=grafana
+	./pgsql.yml --tags=register_grafana
 
 # init loki
 loki:
@@ -226,7 +239,7 @@ dns:
 #------------------------------#
 # 3. start
 #------------------------------#
-# start will pull-up node and write ssh-config
+# start will pull up node and write ssh-config
 # it may take a while to download centos/7 box for the first time
 start: up ssh      # 1-node version
 ssh:               # add current vagrant ssh config to your ~/.ssh/pigsty_config
@@ -400,10 +413,10 @@ cso: copy-src-oss
 copy-src-oss:
 	scp "dist/${VERSION}/${SRC_PKG}" el9:~/pigsty.tgz
 	scp "dist/${VERSION}/${SRC_PKG}" d12:~/pigsty.tgz
-	scp "dist/${VERSION}/${SRC_PKG}" u22:~/pigsty.tgz
+	scp "dist/${VERSION}/${SRC_PKG}" u24:~/pigsty.tgz
 	ssh -t el9 'rm -rf ~/pigsty; tar -xf pigsty.tgz; rm -rf pigsty.tgz'
 	ssh -t d12 'rm -rf ~/pigsty; tar -xf pigsty.tgz; rm -rf pigsty.tgz'
-	ssh -t u22 'rm -rf ~/pigsty; tar -xf pigsty.tgz; rm -rf pigsty.tgz'
+	ssh -t u24 'rm -rf ~/pigsty; tar -xf pigsty.tgz; rm -rf pigsty.tgz'
 copy-src-pro: copy-src-oss
 	scp "dist/${VERSION}/${SRC_PKG}" el8:~/pigsty.tgz
 	scp "dist/${VERSION}/${SRC_PKG}" u24:~/pigsty.tgz
@@ -512,20 +525,17 @@ ts: # terraform ssh
 to: # terraform output
 	cd terraform && make out
 
-
 #------------------------------#
 #     Change Configuration     #
 #------------------------------#
 cmeta:
 	./configure -s -c meta
 cdual:
-	./configure -s -c dual
+	./configure -s -c ha/dual
 ctrio:
-	./configure -s -c trio
+	./configure -s -c ha/trio
 cfull:
 	./configure -s -c full
-cminio:
-	./configure -s -c minio
 csimu:
 	cp conf/simu.yml pigsty.yml
 coss:
@@ -562,14 +572,14 @@ boot-pro:
 # simple 1-node devbox for quick setup, demonstration, and development
 
 meta: meta9
-meta7:  cmeta del vmeta7  up ssh copy-el7 use-pkg
-meta8:  cmeta del vmeta8  up ssh copy-el8 use-pkg
-meta9:  cmeta del vmeta9  up ssh copy-el9 use-pkg
-meta11: cmeta del vmeta11 up ssh copy-d11 use-pkg
-meta12: cmeta del vmeta12 up ssh copy-d12 use-pkg
-meta20: cmeta del vmeta20 up ssh copy-u20 use-pkg
-meta22: cmeta del vmeta22 up ssh copy-u22 use-pkg
-meta24: cmeta del vmeta24 up ssh use-pkg
+meta7:  cmeta del vmeta7  up ssh #copy-el7 use-pkg
+meta8:  cmeta del vmeta8  up ssh #copy-el8 use-pkg
+meta9:  cmeta del vmeta9  up ssh #copy-el9 use-pkg
+meta11: cmeta del vmeta11 up ssh #copy-d11 use-pkg
+meta12: cmeta del vmeta12 up ssh #copy-d12 use-pkg
+meta20: cmeta del vmeta20 up ssh #copy-u20 use-pkg
+meta22: cmeta del vmeta22 up ssh #copy-u22 use-pkg
+meta24: cmeta del vmeta24 up ssh #use-pkg
 
 vm: vmeta
 vmeta:
@@ -595,14 +605,14 @@ vmeta24:
 # full-featured 4-node sandbox for HA-testing & tutorial & practices
 
 full:   full9
-full7:  cfull del vfull7  up ssh copy-el7 use-pkg
-full8:  cfull del vfull8  up ssh copy-el8 use-pkg
-full9:  cfull del vfull9  up ssh copy-el9 use-pkg
-full11: cfull del vfull11 up ssh copy-d11 use-pkg
-full12: cfull del vfull12 up ssh copy-d12 use-pkg
-full20: cfull del vfull20 up ssh copy-u20 use-pkg
-full22: cfull del vfull22 up ssh copy-u22 use-pkg
-full24: cfull del vfull24 up ssh copy-u24 use-pkg
+full7:  cfull del vfull7  up ssh #copy-el7 use-pkg
+full8:  cfull del vfull8  up ssh #copy-el8 use-pkg
+full9:  cfull del vfull9  up ssh #copy-el9 use-pkg
+full11: cfull del vfull11 up ssh #copy-d11 use-pkg
+full12: cfull del vfull12 up ssh #copy-d12 use-pkg
+full20: cfull del vfull20 up ssh #copy-u20 use-pkg
+full22: cfull del vfull22 up ssh #copy-u22 use-pkg
+full24: cfull del vfull24 up ssh #copy-u24 use-pkg
 
 vf: vfull
 vfull:
@@ -646,82 +656,21 @@ vsimu24:
 vs: simu
 simu: simu9
 simu8: csimu del vsimu8 new ssh
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el8.x86_64.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el8.x86_64.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el8.${ARCH}.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el8.${ARCH}.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
 simu9: csimu del vsimu9 new ssh
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el9.x86_64.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el9.x86_64.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el9.${ARCH}.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.el9.${ARCH}.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
 simu12: csimu del vsimu12 new ssh
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.d12.x86_64.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.d12.x86_64.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.d12.${ARCH}.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.d12.${ARCH}.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
 simu22: csimu del vsimu22 new ssh
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u22.x86_64.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u22.x86_64.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u22.${ARCH}.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u22.${ARCH}.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
 simu24: csimu del vsimu24 new ssh
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u24.x86_64.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
-	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u24.x86_64.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u24.${ARCH}.tgz 10.10.10.10:/tmp/pkg.tgz ; ssh 10.10.10.10 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
+	scp dist/${VERSION}/$(PKG)pigsty-pkg-${VERSION}.u24.${ARCH}.tgz 10.10.10.11:/tmp/pkg.tgz ; ssh 10.10.10.11 'sudo mkdir -p /www; sudo tar -xf /tmp/pkg.tgz -C /www'
 
-
-#------------------------------#
-# dual & trio & minio
-#------------------------------#
-dual:   cdual del vdual   up ssh
-dual8:  cdual del vdual8  up ssh
-dual9:  cdual del vdual9  up ssh
-dual12: cdual del vdual12 up ssh
-dual22: cdual del vdual22 up ssh
-dual24: cdual del vdual24 up ssh
-
-vdual:
-	vagrant/config dual
-vdual8:
-	vagrant/config dual el8
-vdual9:
-	vagrant/config dual el9
-vdual12:
-	vagrant/config dual debian12
-vdual20:
-	vagrant/config dual ubuntu20
-vdual22:
-	vagrant/config dual ubuntu22
-vdual24:
-	vagrant/config dual ubuntu24
-
-trio:   ctrio del vtrio   up ssh
-trio8:  ctrio del vtrio8  up ssh
-trio9:  ctrio del vtrio9  up ssh
-trio12: ctrio del vtrio12 up ssh
-trio22: ctrio del vtrio22 up ssh
-trio24: ctrio del vtrio24 up ssh
-vtrio:
-	vagrant/config trio
-vtrio8:
-	vagrant/config trio el8
-vtrio9:
-	vagrant/config trio el9
-vtrio12:
-	vagrant/config trio debian12
-vtrio22:
-	vagrant/config trio ubuntu22
-vtrio24:
-	vagrant/config trio ubuntu24
-
-minio:   cminio del vminio   up ssh
-minio8:  cminio del vminio8  up ssh
-minio9:  cminio del vminio9  up ssh
-minio12: cminio del vminio12 up ssh
-minio22: cminio del vminio22 up ssh
-minio24: cminio del vminio24 up ssh
-vminio:
-	vagrant/config minio
-vminio9:
-	vagrant/config minio el9
-vminio12:
-	vagrant/config minio debian12
-vminio22:
-	vagrant/config minio ubuntu22
-vminio24:
-	vagrant/config minio ubuntu24
 ###############################################################
 
 
@@ -747,9 +696,6 @@ vminio24:
         meta meta7 meta8 meta9 meta11 meta12 meta20 meta22 vmeta vmeta7 vmeta8 vmeta9 vfull11 vmeta12 vmeta20 vmeta22 vmeta24 \
         full full7 full8 full9 full11 full12 full20 full22 vfull vfull7 vfull8 vfull9 vfull11 vfull12 vfull20 vfull22 vfull24 \
         simu simu8 simu9 simu12 simu20 simu22 simu simu8 simu9 simu12 simu20 simu22 \
-        dual dual8 dual9 dual12 dual20 dual22 vdual vdual8 vdual9 vdual12 vdual20 vdual22 \
-        trio trio8 trio9 trio12 trio20 trio22 vtrio vtrio8 vtrio9 vtrio12 vtrio20 vtrio22 \
-        minio minio8 minio9 minio12 minio22 minio24 vminio vminio9 vminio12 vminio22 vminio24 \
         cmeta cdual ctrio cfull csimu coss cpro cext crpm cdeb tu td ts to
 
 ###############################################################

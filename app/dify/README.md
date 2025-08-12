@@ -4,7 +4,7 @@ Dify: https://dify.ai/
 
 The Innovation Engine for GenAI Applications, Dify is an open-source LLM app development platform. Orchestrate LLM apps from agents to complex AI workflows, with an RAG engine.
 
-- [Detailed setup tutorial](https://pigsty.io/docs/software/dify/)
+- [Self-Hosting Dify](https://doc.pgsty.com/app/dify)
 - [GitHub: langgenius/Dify](https://github.com/langgenius/dify/)
 - [Pigsty: Dify Docker Compose Template](https://github.com/pgsty/pigsty/tree/master/app/dify)
 
@@ -106,7 +106,7 @@ Then expose dify web service via Pigsty's Nginx server:
 
 Don't forget to add `dify.pigsty` to your DNS or local `/etc/hosts` / `C:\Windows\System32\drivers\etc\hosts` to access via domain name.
 
-If you are using a public domain, consider using [Certbot](https://pigsty.io/docs/tasks/certbot/) to get a free SSL certificate.
+If you are using a public domain, consider using [Certbot](https://doc.pgsty.com/admin/cert) to get a free SSL certificate.
 
 ```bash
 certbot --nginx --agree-tos --email your@email.com -n -d dify.your.domain    # replace with your email & dify domain

@@ -1,10 +1,11 @@
 #==============================================================#
 # File      :   aliyun-pro.yml
-# Desc      :   5-node oss building env for x86_64/aarch64
+# Desc      :   5-node building env for x86_64/aarch64
 # Ctime     :   2024-12-12
-# Mtime     :   2024-12-24
-# Path      :   tf/terraform
-# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Mtime     :   2025-07-24
+# Path      :   terraform/spec/aliyun-pro.yml
+# Docs      :   https://doc.pgsty.com/prepare/terraform
+# License   :   AGPLv3 @ https://doc.pgsty.com/about/license
 # Copyright :   2018-2025  Ruohang Feng / Vonng (rh@vonng.com)
 #==============================================================#
 
@@ -15,8 +16,8 @@
 variable "architecture" {
   description = "The architecture type (amd64 or arm64), choose one from them"
   type        = string
-  #default     = "amd64"    # comment this to use arm64
-  default     = "arm64"   # uncomment this to use arm64
+  default     = "amd64"    # comment this to use arm64
+  #default     = "arm64"   # uncomment this to use arm64
 }
 
 locals {
@@ -32,9 +33,9 @@ locals {
     amd64 = {
       el7   = "^centos_7_9_x64"
       el8   = "^rockylinux_8_10_x64"
-      el9   = "^rockylinux_9_5_x64"
+      el9   = "^rockylinux_9_6_x64"
       d11   = "^debian_11_11_x64"
-      d12   = "^debian_12_10_x64"
+      d12   = "^debian_12_11_x64"
       u20   = "^ubuntu_20_04_x64"
       u22   = "^ubuntu_22_04_x64"
       u24   = "^ubuntu_24_04_x64"
@@ -42,8 +43,8 @@ locals {
     }
     arm64 = {
       el8   = "^rockylinux_8_10_arm64"
-      el9   = "^rockylinux_9_5_arm64"
-      d12   = "^debian_12_10_arm64"
+      el9   = "^rockylinux_9_6_arm64"
+      d12   = "^debian_12_11_arm64"
       u22   = "^ubuntu_22_04_arm64"
       u24   = "^ubuntu_24_04_arm64"
     }
@@ -64,6 +65,7 @@ locals {
 provider "alicloud" {
   # access_key = "????????????????????"
   # secret_key = "????????????????????"
+  region = "cn-hongkong"
 }
 
 
@@ -80,12 +82,12 @@ resource "alicloud_vpc" "vpc" {
 resource "alicloud_vswitch" "vsw" {
   vpc_id     = "${alicloud_vpc.vpc.id}"
   cidr_block = "10.10.10.0/24"
-  zone_id    = "cn-beijing-l"
+  zone_id    = "cn-hongkong-d"
 }
 
 # add default security group and allow all tcp traffic
 resource "alicloud_security_group" "default" {
-  name   = "default"
+  security_group_name = "default"
   vpc_id = "${alicloud_vpc.vpc.id}"
 }
 resource "alicloud_security_group_rule" "allow_all_tcp" {
@@ -137,9 +139,8 @@ output "el8_ip" {
 
 
 #======================================#
-# EL9 ARM64
+# EL9 AMD64 / ARM64
 #======================================#
-# rockylinux_9_4_arm64_20G_alibase_20240820.vhd
 data "alicloud_images" "el9_img" {
   owners     = "system"
   name_regex = local.selected_images.el9
@@ -172,9 +173,8 @@ output "el9_ip" {
 
 
 #======================================#
-# D12 ARM64
+# D12 AMD64 / ARM64
 #======================================#
-# debian_12_7_arm64_20G_alibase_20241105.vhd
 data "alicloud_images" "d12_img" {
   owners     = "system"
   name_regex = local.selected_images.d12
@@ -240,9 +240,8 @@ output "u22_ip" {
 
 
 #======================================#
-# U24 ARM64
+# U24 AMD64 / ARM64
 #======================================#
-# ubuntu_24_04_arm64_20G_alibase_20240820.vhd
 data "alicloud_images" "u24_img" {
   owners     = "system"
   name_regex = local.selected_images.u24
@@ -271,9 +270,9 @@ output "u24_ip" {
   value = "${alicloud_instance.pg-u24.public_ip}"
 }
 
-
-# sshpass -p PigstyDemo4 ssh-copy-id ael8
-# sshpass -p PigstyDemo4 ssh-copy-id ael9
+# sshpass -p PigstyDemo4 ssh-copy-id el8
+# sshpass -p PigstyDemo4 ssh-copy-id el9
+# sshpass -p PigstyDemo4 ssh-copy-id d12
 # sshpass -p PigstyDemo4 ssh-copy-id u22
 # sshpass -p PigstyDemo4 ssh-copy-id u24
-# sshpass -p PigstyDemo4 ssh-copy-id d12
+
