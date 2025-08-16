@@ -44,3 +44,19 @@
         state: restarted
         daemon_reload: yes
       when: grafana_enabled|default(true)|bool
+
+    - name: Wait for Grafana to be ready after restart
+      wait_for:
+        port: 3000
+        host: "{{ inventory_hostname }}"
+        delay: 10
+        timeout: 60
+
+# Re-register PostgreSQL datasources that were lost during backend migration
+- name: Re-register PostgreSQL datasources
+  hosts: pg-fmp:pg-util
+  gather_facts: no
+  become: yes
+  roles:
+    - { role: pg_monitor, tags: register_grafana }
+  tags: datasource_reregister
