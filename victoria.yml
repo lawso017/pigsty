@@ -64,7 +64,6 @@
   become: true
   gather_facts: false
   tags: [victoria, grafana, datasources]
-  when: grafana_enabled|default(true)
 
   tasks:
     - name: Create Victoria data sources configuration
@@ -104,7 +103,9 @@
         group: grafana
         mode: '0644'
       notify: restart grafana
-      when: inventory_hostname == groups['infra'][0]
+      when: 
+        - grafana_enabled|default(true)
+        - inventory_hostname == groups['infra'][0]
 
   handlers:
     - name: restart grafana
