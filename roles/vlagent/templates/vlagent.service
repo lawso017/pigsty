@@ -23,8 +23,11 @@ NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths={{ vlagent_data_dir }} /var/log{% if docker_enabled|default(false) %} /var/lib/docker/containers{% endif %}
+
 PrivateTmp=true
-{% if docker_enabled|default(false) %}SupplementaryGroups=docker{% endif %}
+{% if docker_enabled|default(false) and vlagent_docker_group_exists|default(false) %}
+SupplementaryGroups=docker
+{% endif %}
 RestrictSUIDSGID=true
 
 [Install]

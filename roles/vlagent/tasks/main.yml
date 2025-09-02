@@ -52,6 +52,19 @@
         vlagent_postgres_enabled: true
       when: "'pg-' in group_names"
 
+    # Check if docker group exists for systemd template
+    - name: check if docker group exists
+      group:
+        name: docker
+        state: present
+      check_mode: true
+      register: docker_group_check
+      ignore_errors: true
+
+    - name: set docker group exists fact
+      set_fact:
+        vlagent_docker_group_exists: "{{ docker_group_check is not failed }}"
+
     - name: render vlagent configuration
       template:
         src: vlagent.yml
