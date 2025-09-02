@@ -104,6 +104,7 @@
   roles:
     - { role: victoria_metrics, tags: victoria_metrics, when: victoria_metrics_enabled|default(false) }
     - { role: victoria_logs, tags: victoria_logs, when: victoria_logs_enabled|default(false) }
+    - { role: vmalert, tags: vmalert, alerts, recording_rules }
 
 - name: VICTORIA AGENTS
   become: yes
