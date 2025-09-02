@@ -24,6 +24,4 @@ vmalert_evaluation_interval: 15s        # how often to evaluate rules
 vmalert_external_labels: {}              # external labels to add to alerts
 
 # vmalert service configuration
-vmalert_max_concurrent_requests: 8       # max concurrent requests to VictoriaMetrics
-vmalert_query_timeout: 30s               # query timeout
 vmalert_rule_update_entries_limit: 20000 # max entries for rule updates

@@ -17,8 +17,6 @@ ExecStart=/usr/bin/vmalert \
     -rule={{ vmalert_rules_dir }}/*.yml \
     -evaluationInterval={{ vmalert_evaluation_interval }} \
     -loggerLevel={{ vmalert_log_level }} \
-    -maxConcurrentRequests={{ vmalert_max_concurrent_requests }} \
-    -datasource.queryTimeoutDuration={{ vmalert_query_timeout }} \
     -rule.updateEntriesLimit={{ vmalert_rule_update_entries_limit }}{% if vmalert_external_labels %}{% for key, value in vmalert_external_labels.items() %} \
     -external.label={{ key }}={{ value }}{% endfor %}{% endif %}
 
