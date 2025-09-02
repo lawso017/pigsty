@@ -27,6 +27,21 @@
       when: docker_enabled|default(false)
       ignore_errors: true  # Don't fail if docker group doesn't exist yet
 
+    - name: add vlagent to postgres group (for PostgreSQL log access)
+      user:
+        name: vlagent
+        groups: postgres
+        append: true
+      when: "'pg-' in group_names"
+      ignore_errors: true  # Don't fail if postgres group doesn't exist yet
+
+    - name: add vlagent to adm group (for system and nginx log access)
+      user:
+        name: vlagent
+        groups: adm
+        append: true
+      ignore_errors: true  # Don't fail if adm group doesn't exist yet
+
     - name: create vlagent directories
       file:
         path: "{{ item }}"
