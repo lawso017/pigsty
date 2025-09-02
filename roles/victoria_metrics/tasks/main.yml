@@ -18,6 +18,8 @@
         shell: /bin/false
         home: "{{ victoria_metrics_data_dir }}"
         create_home: false
+        groups: prometheus
+        append: true
 
     - name: create victoriametrics directories
       file:
