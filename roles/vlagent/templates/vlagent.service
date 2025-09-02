@@ -13,7 +13,7 @@ WorkingDirectory={{ vlagent_data_dir }}
 ExecStart=/usr/bin/vlagent \
     -httpListenAddr=:{{ vlagent_port }} \
     -loggerLevel={{ vlagent_log_level }} \
-    -remotewrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
+    -remoteWrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
 {% for host in groups['infra'] %}
     -remoteWrite.url=http://{{ host }}:9428/internal/insert \
 {% endfor %}
@@ -24,7 +24,7 @@ ExecStart=/usr/bin/vlagent \
 ExecStart=/usr/bin/vlagent \
     -httpListenAddr=:{{ vlagent_port }} \
     -loggerLevel={{ vlagent_log_level }} \
-    -remotewrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
+    -remoteWrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
 {% for host in groups['infra'] %}
     -remoteWrite.url=http://{{ host }}:9428/internal/insert \
 {% endfor %}
