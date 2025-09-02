@@ -11,7 +11,7 @@ Group=vlagent
 ExecStart=/usr/bin/vlagent \
     -config.file={{ vlagent_config_dir }}/vlagent.yml \
     -httpListenAddr=:{{ vlagent_port }} \
-    -logLevel={{ vlagent_log_level }}
+    -loggerLevel={{ vlagent_log_level }}
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure
@@ -22,9 +22,9 @@ LimitNOFILE=65536
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths={{ vlagent_data_dir }} /var/log /var/lib/docker/containers
+ReadWritePaths={{ vlagent_data_dir }} /var/log{% if docker_enabled|default(false) %} /var/lib/docker/containers{% endif %}
 PrivateTmp=true
-SupplementaryGroups=docker
+{% if docker_enabled|default(false) %}SupplementaryGroups=docker{% endif %}
 RestrictSUIDSGID=true
 
 [Install]
