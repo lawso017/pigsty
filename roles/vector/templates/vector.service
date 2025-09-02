@@ -23,13 +23,6 @@ ProtectHome=true
 ReadWritePaths={{ vector_data_dir }} /var/log{% if vector_docker_enabled %} /var/lib/docker/containers{% endif %}{% if pg_cluster is defined and pg_seq is defined %} {{ vector_postgres_log_dir }}{% endif %}
 
 PrivateTmp=true
-{% set groups = [] %}
-{% if vector_docker_enabled %}{% set _ = groups.append('docker') %}{% endif %}
-{% if pg_cluster is defined and pg_seq is defined %}{% set _ = groups.append('postgres') %}{% endif %}
-{% if inventory_hostname in groups["infra"]|default([]) %}{% set _ = groups.append('adm') %}{% endif %}
-{% if groups %}
-SupplementaryGroups={{ groups | join(' ') }}
-{% endif %}
 RestrictSUIDSGID=true
 
 [Install]
