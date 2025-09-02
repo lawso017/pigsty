@@ -67,6 +67,10 @@
   become: true
   gather_facts: false
   tags: [victoria, grafana, datasources]
+  vars_files:
+    - "roles/victoria_metrics/defaults/main.yml"
+    - "roles/victoria_logs/defaults/main.yml"
+    - "roles/vmalert/defaults/main.yml"
 
   tasks:
     - name: Create Victoria data sources configuration
