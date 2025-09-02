@@ -6,7 +6,6 @@
 
 # Global settings
 data_dir: "{{ vector_data_dir }}"
-log_level: "{{ vector_log_level }}"
 
 # API configuration
 api:
