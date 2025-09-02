@@ -73,28 +73,69 @@
     - "roles/vmalert/defaults/main.yml"
 
   tasks:
-    - name: Create Victoria data sources configuration
+    - name: Update Pigsty datasources for Victoria Stack
       copy:
         content: |
           apiVersion: 1
+          
+          # Remove old datasources first
+          deleteDatasources:
+            - { name: Prometheus , orgId: 1 }
+            - { name: VictoriaMetrics , orgId: 1 }
+            - { name: Loki , orgId: 1 }
+            - { name: VictoriaLogs , orgId: 1 }
+            - { name: Meta , orgId: 1 }
+            - { name: Static , orgId: 1 }
+          
+          # Install Victoria Stack datasources
           datasources:
             # VictoriaMetrics (replaces Prometheus)
-            - name: VictoriaMetrics
+            - name: Prometheus
+              uid: ds-prometheus  
               type: prometheus
               access: proxy
-              url: http://{{ inventory_hostname }}:{{ victoria_metrics_port }}
+              url: http://127.0.0.1:{{ victoria_metrics_port }}
               isDefault: true
               editable: true
+              version: 1
               jsonData:
+                timeInterval: "2s"
+                queryTimeout: "60s"
                 httpMethod: POST
                 prometheusType: Prometheus
                 prometheusVersion: 2.40.0
+                tlsAuth: false
+                tlsAuthWithCACert: false
+              secureJsonData: {}
+                
+            # Pigsty Meta Database (PostgreSQL) - unchanged
+            - name: Meta
+              type: postgres
+              uid: ds-meta
+              url: 127.0.0.1:5432
+              access: proxy
+              user: dbuser_view
+              database: meta
+              editable: true
+              jsonData: {
+                "database": "meta",
+                "connMaxLifetime": 14400,
+                "maxIdleConns": 10,
+                "maxOpenConns": 64,
+                "postgresVersion": 1500,
+                "sslmode": "require",
+                "tlsAuth": false,
+                "tlsAuthWithCACert": false
+              }
+              secureJsonData:
+                password: DBUser.Viewer
                 
             # VictoriaLogs (replaces Loki)  
-            - name: VictoriaLogs
+            - name: Loki
               type: loki
+              uid: ds-loki
+              url: http://127.0.0.1:{{ victoria_logs_port }}
               access: proxy
-              url: http://{{ inventory_hostname }}:{{ victoria_logs_port }}
               editable: true
               jsonData:
                 maxLines: 1000
@@ -102,10 +143,16 @@
                   - name: "Container"
                     regex: "container=([^,}]+)"
                     url: "$${__value.raw}"
-                  - name: "Service"
+                  - name: "Service" 
                     regex: "service=([^,}]+)"
                     url: "$${__value.raw}"
-        dest: /etc/grafana/provisioning/datasources/victoria.yml
+            
+            # Pigsty Static Datasource - unchanged
+            - name: Static
+              type: marcusolsson-static-datasource
+              uid: ds-static
+              editable: true
+        dest: /etc/grafana/provisioning/datasources/pigsty.yml
         owner: grafana
         group: grafana
         mode: '0644'
