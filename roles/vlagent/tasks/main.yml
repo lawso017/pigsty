@@ -79,6 +79,7 @@
         src: vlagent.service
         dest: /etc/systemd/system/vlagent.service
         mode: '0644'
+        force: yes
       notify: restart vlagent
 
 #--------------------------------------------------------------#
