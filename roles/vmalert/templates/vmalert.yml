@@ -17,4 +17,4 @@ groups:
           service: vmalert
         annotations:
           summary: "vmalert instance is down"
-          description: "vmalert instance {{ $labels.instance }} has been down for more than 1 minute"
+          description: {% raw %}"vmalert instance {{ $labels.instance }} has been down for more than 1 minute"{% endraw %}
