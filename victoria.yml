@@ -132,7 +132,7 @@
                 
             # VictoriaLogs (replaces Loki using native plugin)  
             - name: Loki
-              type: victorialogs-datasource
+              type: victoriametrics-logs-datasource
               uid: ds-loki
               url: http://127.0.0.1:{{ victoria_logs_port }}
               access: proxy
