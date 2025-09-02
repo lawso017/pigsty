@@ -130,9 +130,9 @@
               secureJsonData:
                 password: DBUser.Viewer
                 
-            # VictoriaLogs (replaces Loki)  
+            # VictoriaLogs (replaces Loki using native plugin)  
             - name: Loki
-              type: loki
+              type: victorialogs-datasource
               uid: ds-loki
               url: http://127.0.0.1:{{ victoria_logs_port }}
               access: proxy
