@@ -6,8 +6,8 @@ victoria_metrics_enabled: true       # enable victoria metrics on this node?
 victoria_metrics_port: 8428          # victoria metrics listen port
 victoria_metrics_data_dir: /var/lib/victoriametrics  # data storage directory
 victoria_metrics_config_dir: /etc/victoriametrics    # configuration directory
-victoria_metrics_log_level: INFO     # log level: DEBUG, INFO, WARN, ERROR
-victoria_metrics_retention_months: 12  # metrics retention in months
+victoria_metrics_log_level: INFO        # log level: DEBUG, INFO, WARN, ERROR
+victoria_metrics_retention_period: 120d  # metrics retention in days
 
 #--------------------------------------------------------------#
 # PERFORMANCE SETTINGS
