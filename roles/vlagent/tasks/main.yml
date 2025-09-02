@@ -18,8 +18,14 @@
         shell: /bin/false
         home: "{{ vlagent_data_dir }}"
         create_home: false
-        groups: docker  # Add to docker group for container log access
+
+    - name: add vlagent to docker group (if docker enabled on this host)
+      user:
+        name: vlagent
+        groups: docker
         append: true
+      when: docker_enabled|default(false)
+      ignore_errors: true  # Don't fail if docker group doesn't exist yet
 
     - name: create vlagent directories
       file:
