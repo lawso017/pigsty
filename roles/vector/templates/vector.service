@@ -20,7 +20,7 @@ LimitNOFILE=65536
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths={{ vector_data_dir }} /var/log{% if vector_docker_enabled %} /var/lib/docker/containers{% endif %}{% if pg_cluster is defined and pg_seq is defined %} {{ vector_postgres_log_dir }}{% endif %}
+ReadWritePaths={{ vector_data_dir }} /var/log{% if docker_enabled|default(false) %} /var/lib/docker/containers{% endif %}{% if pg_cluster is defined and pg_seq is defined %} {{ vector_postgres_log_dir }}{% endif %}
 
 PrivateTmp=true
 RestrictSUIDSGID=true
