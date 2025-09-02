@@ -21,8 +21,13 @@ positions:
 # Log scraping configurations
 scrape_configs:
 
+  ################################################################
+  #                        Node Logs                            #
+  ################################################################
+  # Collect system logs on all nodes (equivalent to Promtail nodes job)
+  
 {% if vlagent_syslog_enabled %}
-  # System logs (replaces promtail syslog collection)
+  # System logs
   - job_name: syslog
     static_configs:
       - targets: ['localhost:0']
@@ -31,7 +36,33 @@ scrape_configs:
           src: syslog
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ vlagent_syslog_path }}
+{% if os_package|default('rpm') == 'deb' %}
+          __path__: /var/log/syslog
+{% else %}
+          __path__: /var/log/messages
+{% endif %}
+
+  # Kernel messages
+  - job_name: dmesg
+    static_configs:
+      - targets: ['localhost:0']
+        labels:
+          job: node
+          src: dmesg
+          instance: "{{ inventory_hostname }}"
+          cluster: "{{ node_cluster|default('nodes') }}"
+          __path__: /var/log/dmesg
+
+  # Cron logs
+  - job_name: cron
+    static_configs:
+      - targets: ['localhost:0']
+        labels:
+          job: node
+          src: cron
+          instance: "{{ inventory_hostname }}"
+          cluster: "{{ node_cluster|default('nodes') }}"
+          __path__: /var/log/cron
 {% endif %}
 
 {% if vlagent_docker_enabled %}
@@ -91,48 +122,116 @@ scrape_configs:
           source: output
 {% endif %}
 
-{% if vlagent_postgres_enabled and 'pg-' in group_names %}
+{% if inventory_hostname in groups["infra"]|default([]) %}
+  ################################################################
+  #                       Infra Logs                            #
+  ################################################################
+  # Collect nginx logs on infra nodes (equivalent to Promtail infra job)
+
+{% if inventory_hostname in groups['infra']|default([]) and (nginx_enabled is not defined or nginx_enabled|bool) %}
+  # Nginx access logs
+  - job_name: nginx
+    static_configs:
+      - targets: ['localhost:0']
+        labels:
+          job: infra
+          src: nginx
+          instance: "{{ inventory_hostname }}"
+          cluster: "{{ node_cluster|default('nodes') }}"
+          __path__: /var/log/nginx/*.log
+
+  # Nginx error logs
+  - job_name: nginx-error
+    static_configs:
+      - targets: ['localhost:0']
+        labels:
+          job: infra
+          src: nginx-error
+          instance: "{{ inventory_hostname }}"
+          cluster: "{{ node_cluster|default('nodes') }}"
+          __path__: /var/log/nginx-error.log
+{% endif %}
+
+{% endif %}
+
+{% if pg_cluster is defined and pg_seq is defined %}
+  ################################################################
+  #                      PostgreSQL Logs                         #
+  ################################################################
   # PostgreSQL logs (for database nodes)
   - job_name: postgres
     static_configs:
       - targets: ['localhost:0']
         labels:
-          job: postgres
-          src: postgresql
+          job: pgsql
+          src: postgres
+          cls: "{{ pg_cluster }}"
+          ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ vlagent_postgres_log_dir }}/postgresql-*.log
+          __path__: {{ pg_log_dir }}/*
 
+{% if patroni_enabled is defined and patroni_enabled|bool %}
   # Patroni logs
-  - job_name: patroni  
+  - job_name: patroni
     static_configs:
       - targets: ['localhost:0']
         labels:
-          job: patroni
+          job: pgsql
           src: patroni
+          cls: "{{ pg_cluster }}"
+          ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ vlagent_postgres_log_dir }}/patroni.log
+          __path__: {{ patroni_log_dir }}/patroni.log
+{% endif %}
 
+{% if pgbackrest_enabled is defined and pgbackrest_enabled|bool %}
   # pgBackRest logs
   - job_name: pgbackrest
     static_configs:
-      - targets: ['localhost:0'] 
+      - targets: ['localhost:0']
         labels:
-          job: pgbackrest
+          job: pgsql
           src: pgbackrest
+          cls: "{{ pg_cluster }}"
+          ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ vlagent_postgres_log_dir }}/pgbackrest*.log
+          __path__: {{ pgbackrest_log_dir }}/*.log
+{% endif %}
 
-  # PgBouncer logs  
+{% if pgbouncer_enabled is defined and pgbouncer_enabled|bool %}
+  # PgBouncer logs
   - job_name: pgbouncer
     static_configs:
       - targets: ['localhost:0']
         labels:
-          job: pgbouncer
+          job: pgsql
           src: pgbouncer
+          cls: "{{ pg_cluster }}"
+          ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ vlagent_postgres_log_dir }}/pgbouncer.log
+          __path__: {{ pgbouncer_log_dir }}/pgbouncer.log
+{% endif %}
+
+{% endif %}
+
+{% if redis_cluster is defined and redis_node is defined %}
+  ################################################################
+  #                         Redis Logs                           #
+  ################################################################
+  # Collect redis logs (equivalent to Promtail redis job)
+  - job_name: redis
+    static_configs:
+      - targets: ['localhost:0']
+        labels:
+          job: redis
+          src: redis
+          cls: "{{ redis_cluster }}"
+          ins: "{{ redis_cluster }}-{{ redis_node }}"
+          instance: "{{ inventory_hostname }}"
+          cluster: "{{ node_cluster|default('nodes') }}"
+          __path__: /var/log/redis/*.log
 {% endif %}
