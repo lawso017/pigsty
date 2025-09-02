@@ -11,6 +11,11 @@
         name: vector
         state: present
 
+    - name: remove vlagent package
+      package:
+        name: vlagent
+        state: absent
+
     - name: create vector user
       user:
         name: vector
