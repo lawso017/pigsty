@@ -65,6 +65,13 @@
       set_fact:
         vlagent_docker_group_exists: "{{ docker_group_check is not failed }}"
 
+    - name: debug docker variables
+      debug:
+        msg: |
+          docker_enabled: {{ docker_enabled|default(false) }}
+          vlagent_docker_group_exists: {{ vlagent_docker_group_exists|default(false) }}
+          docker_group_check.failed: {{ docker_group_check.failed|default('undefined') }}
+
     - name: render vlagent configuration
       template:
         src: vlagent.yml
@@ -81,6 +88,14 @@
         mode: '0644'
         force: yes
       notify: restart vlagent
+      register: vlagent_service_result
+
+    - name: debug systemd service template result
+      debug:
+        msg: |
+          template changed: {{ vlagent_service_result.changed }}
+          dest: {{ vlagent_service_result.dest|default('undefined') }}
+          backup_file: {{ vlagent_service_result.backup_file|default('none') }}
 
 #--------------------------------------------------------------#
 # Launch vlagent                               [vlagent_launch]
