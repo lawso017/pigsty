@@ -1,0 +1,84 @@
+---
+#--------------------------------------------------------------#
+# Install VictoriaMetrics                   [victoria_metrics_install]
+#--------------------------------------------------------------#
+- name: install victoria metrics
+  tags: [victoria_metrics, victoria_metrics_install]
+  when: victoria_metrics_enabled|bool
+  block:
+    - name: install victoria-metrics package
+      package:
+        name: victoria-metrics
+        state: present
+
+    - name: create victoriametrics user
+      user:
+        name: victoriametrics
+        system: true
+        shell: /bin/false
+        home: "{{ victoria_metrics_data_dir }}"
+        create_home: false
+
+    - name: create victoriametrics directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: victoriametrics
+        group: victoriametrics
+        mode: '0755'
+      loop:
+        - "{{ victoria_metrics_data_dir }}"
+        - "{{ victoria_metrics_config_dir }}" 
+        - /var/log/victoriametrics
+
+#--------------------------------------------------------------#
+# Config VictoriaMetrics                    [victoria_metrics_config]
+#--------------------------------------------------------------#
+- name: config victoria metrics
+  tags: [victoria_metrics, victoria_metrics_config]
+  when: victoria_metrics_enabled|bool
+  block:
+    - name: render victoriametrics systemd service
+      template:
+        src: victoriametrics.service
+        dest: /etc/systemd/system/victoriametrics.service
+        mode: '0644'
+      notify: restart victoriametrics
+
+#--------------------------------------------------------------#
+# Launch VictoriaMetrics                    [victoria_metrics_launch]
+#--------------------------------------------------------------#
+- name: launch victoria metrics
+  tags: [victoria_metrics, victoria_metrics_launch]
+  when: victoria_metrics_enabled|bool
+  block:
+    - name: reload systemd daemon
+      systemd:
+        daemon_reload: true
+
+    - name: start and enable victoriametrics service
+      systemd:
+        name: victoriametrics
+        state: started
+        enabled: true
+
+    - name: wait for victoriametrics service online
+      wait_for:
+        host: 127.0.0.1
+        port: "{{ victoria_metrics_port }}"
+        state: started
+        timeout: 60
+
+#--------------------------------------------------------------#
+# Victoria Metrics Health Check             [victoria_metrics_check]
+#--------------------------------------------------------------#
+- name: check victoria metrics health
+  tags: [victoria_metrics, victoria_metrics_check]
+  when: victoria_metrics_enabled|bool
+  uri:
+    url: "http://127.0.0.1:{{ victoria_metrics_port }}/health"
+    method: GET
+    status_code: 200
+  register: vm_health_check
+  retries: 3
+  delay: 5

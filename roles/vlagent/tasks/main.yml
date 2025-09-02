@@ -1,0 +1,87 @@
+---
+#--------------------------------------------------------------#
+# Install vlagent                               [vlagent_install]
+#--------------------------------------------------------------#
+- name: install vlagent
+  tags: [vlagent, vlagent_install]
+  when: vlagent_enabled|bool
+  block:
+    - name: install vlagent package
+      package:
+        name: vlagent
+        state: present
+
+    - name: create vlagent user
+      user:
+        name: vlagent
+        system: true
+        shell: /bin/false
+        home: "{{ vlagent_data_dir }}"
+        create_home: false
+        groups: docker  # Add to docker group for container log access
+        append: true
+
+    - name: create vlagent directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: vlagent
+        group: vlagent
+        mode: '0755'
+      loop:
+        - "{{ vlagent_config_dir }}"
+        - "{{ vlagent_data_dir }}"
+        - /var/log/vlagent
+
+#--------------------------------------------------------------#
+# Config vlagent                                [vlagent_config]
+#--------------------------------------------------------------#
+- name: config vlagent
+  tags: [vlagent, vlagent_config]
+  when: vlagent_enabled|bool
+  block:
+    # Set postgres log collection based on node type
+    - name: set postgres log collection for database nodes
+      set_fact:
+        vlagent_postgres_enabled: true
+      when: "'pg-' in group_names"
+
+    - name: render vlagent configuration
+      template:
+        src: vlagent.yml
+        dest: "{{ vlagent_config_dir }}/vlagent.yml"
+        owner: vlagent
+        group: vlagent
+        mode: '0644'
+      notify: restart vlagent
+
+    - name: render vlagent systemd service
+      template:
+        src: vlagent.service
+        dest: /etc/systemd/system/vlagent.service
+        mode: '0644'
+      notify: restart vlagent
+
+#--------------------------------------------------------------#
+# Launch vlagent                               [vlagent_launch]
+#--------------------------------------------------------------#
+- name: launch vlagent
+  tags: [vlagent, vlagent_launch]
+  when: vlagent_enabled|bool
+  block:
+    - name: reload systemd daemon
+      systemd:
+        daemon_reload: true
+
+    - name: start and enable vlagent service
+      systemd:
+        name: vlagent
+        state: started
+        enabled: true
+
+    - name: wait for vlagent service online
+      wait_for:
+        host: 127.0.0.1
+        port: "{{ vlagent_port }}"
+        state: started
+        timeout: 30

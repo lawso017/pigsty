@@ -1,0 +1,35 @@
+[Unit]
+Description=VictoriaLogs - High-performance log database
+Documentation=https://docs.victoriametrics.com/VictoriaLogs/
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=victorialogs
+Group=victorialogs
+ExecStart=/usr/bin/victoria-logs-prod \
+    -httpListenAddr=:{{ victoria_logs_port }} \
+    -storageDataPath={{ victoria_logs_data_dir }} \
+    -logLevel={{ victoria_logs_log_level }} \
+    -retentionMonths={{ victoria_logs_retention_months }} \
+    -maxConcurrentInserts={{ victoria_logs_max_concurrent_inserts }}
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+LimitNPROC=32768
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths={{ victoria_logs_data_dir }} {{ victoria_logs_config_dir }}
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

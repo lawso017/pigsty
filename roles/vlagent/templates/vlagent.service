@@ -1,0 +1,31 @@
+[Unit]
+Description=vlagent - VictoriaLogs Log Collection Agent
+Documentation=https://docs.victoriametrics.com/VictoriaLogs/data_ingestion.html#vlagent
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vlagent
+Group=vlagent
+ExecStart=/usr/bin/vlagent \
+    -config.file={{ vlagent_config_dir }}/vlagent.yml \
+    -httpListenAddr=:{{ vlagent_port }} \
+    -logLevel={{ vlagent_log_level }}
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths={{ vlagent_data_dir }} /var/log /var/lib/docker/containers
+PrivateTmp=true
+SupplementaryGroups=docker
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

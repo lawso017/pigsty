@@ -1,0 +1,7 @@
+---
+- name: restart vlagent
+  systemd:
+    name: vlagent
+    state: restarted
+    daemon_reload: true
+  when: vlagent_enabled|bool

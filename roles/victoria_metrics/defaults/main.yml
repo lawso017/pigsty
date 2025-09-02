@@ -1,0 +1,35 @@
+---
+#--------------------------------------------------------------#
+# VICTORIA METRICS
+#--------------------------------------------------------------#
+victoria_metrics_enabled: true       # enable victoria metrics on this node?
+victoria_metrics_port: 8428          # victoria metrics listen port
+victoria_metrics_data_dir: /var/lib/victoriametrics  # data storage directory
+victoria_metrics_config_dir: /etc/victoriametrics    # configuration directory
+victoria_metrics_log_level: INFO     # log level: DEBUG, INFO, WARN, ERROR
+victoria_metrics_retention_months: 12  # metrics retention in months
+
+#--------------------------------------------------------------#
+# PERFORMANCE SETTINGS
+#--------------------------------------------------------------#
+victoria_metrics_memory_limit: ""    # memory limit (e.g., "4GB"), empty = auto
+victoria_metrics_storage_vmselect_cache_size: 32  # vmselect cache size in MB
+victoria_metrics_max_concurrent_inserts: 32       # max concurrent insert requests
+victoria_metrics_max_labels_per_timeseries: 30    # max labels per timeseries
+
+#--------------------------------------------------------------#
+# SEARCH & QUERY SETTINGS  
+#--------------------------------------------------------------#
+victoria_metrics_search_max_query_duration: 30s   # max query duration
+victoria_metrics_search_max_concurrent_requests: 100  # max concurrent search requests
+
+#--------------------------------------------------------------#
+# CLUSTER MODE (future expansion)
+#--------------------------------------------------------------#
+victoria_metrics_cluster: false      # enable cluster mode?
+victoria_metrics_replication_factor: 1  # replication factor
+
+# Cluster component ports (if cluster mode enabled)
+vminsert_port: 8480                  # vminsert port  
+vmselect_port: 8481                  # vmselect port
+vmstorage_port: 8482                 # vmstorage port

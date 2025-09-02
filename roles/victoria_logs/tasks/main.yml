@@ -1,0 +1,79 @@
+---
+#--------------------------------------------------------------#
+# Install VictoriaLogs                        [victoria_logs_install]
+#--------------------------------------------------------------#
+- name: install victoria logs
+  tags: [victoria_logs, victoria_logs_install]
+  when: victoria_logs_enabled|bool
+  block:
+    - name: install victoria-logs package
+      package:
+        name: victoria-logs
+        state: present
+
+    - name: create victorialogs user
+      user:
+        name: victorialogs
+        system: true
+        shell: /bin/false
+        home: "{{ victoria_logs_data_dir }}"
+        create_home: false
+
+    - name: create victorialogs directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: victorialogs
+        group: victorialogs
+        mode: '0755'
+      loop:
+        - "{{ victoria_logs_data_dir }}"
+        - "{{ victoria_logs_config_dir }}"
+        - /var/log/victorialogs
+
+#--------------------------------------------------------------#
+# Config VictoriaLogs                         [victoria_logs_config]
+#--------------------------------------------------------------#
+- name: config victoria logs
+  tags: [victoria_logs, victoria_logs_config]
+  when: victoria_logs_enabled|bool
+  block:
+    - name: render victorialogs configuration
+      template:
+        src: victorialogs.yml
+        dest: "{{ victoria_logs_config_dir }}/victorialogs.yml"
+        owner: victorialogs
+        group: victorialogs
+        mode: '0644'
+      notify: restart victorialogs
+
+    - name: render victorialogs systemd service
+      template:
+        src: victorialogs.service
+        dest: /etc/systemd/system/victorialogs.service
+        mode: '0644'
+      notify: restart victorialogs
+
+#--------------------------------------------------------------#
+# Launch VictoriaLogs                         [victoria_logs_launch]
+#--------------------------------------------------------------#
+- name: launch victoria logs
+  tags: [victoria_logs, victoria_logs_launch]
+  when: victoria_logs_enabled|bool
+  block:
+    - name: reload systemd daemon
+      systemd:
+        daemon_reload: true
+
+    - name: start and enable victorialogs service
+      systemd:
+        name: victorialogs
+        state: started
+        enabled: true
+
+    - name: wait for victorialogs service online
+      wait_for:
+        host: 127.0.0.1
+        port: "{{ victoria_logs_port }}"
+        state: started
+        timeout: 60

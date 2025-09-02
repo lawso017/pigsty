@@ -1,0 +1,40 @@
+[Unit]
+Description=VictoriaMetrics - High-performance TSDB and monitoring solution
+Documentation=https://docs.victoriametrics.com/
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=victoriametrics
+Group=victoriametrics
+ExecStart=/usr/bin/victoria-metrics-prod \
+    -httpListenAddr=:{{ victoria_metrics_port }} \
+    -storageDataPath={{ victoria_metrics_data_dir }} \
+    -logLevel={{ victoria_metrics_log_level }} \
+    -retentionPeriod={{ victoria_metrics_retention_months }}m \
+    -search.maxQueryDuration={{ victoria_metrics_search_max_query_duration }} \
+    -search.maxConcurrentRequests={{ victoria_metrics_search_max_concurrent_requests }} \
+    -maxConcurrentInserts={{ victoria_metrics_max_concurrent_inserts }} \
+    -maxLabelsPerTimeseries={{ victoria_metrics_max_labels_per_timeseries }}{% if victoria_metrics_memory_limit %} \
+    -memory.allowedPercent={{ victoria_metrics_memory_limit }}{% endif %}
+
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+LimitNPROC=32768
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths={{ victoria_metrics_data_dir }} {{ victoria_metrics_config_dir }}
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

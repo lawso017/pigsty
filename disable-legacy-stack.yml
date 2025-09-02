@@ -1,0 +1,148 @@
+#!/usr/bin/env ansible-playbook
+---
+#==============================================================#
+# File      :   disable-legacy-stack.yml
+# Desc      :   Clean removal of deprecated Prometheus/Loki/Promtail
+# Ctime     :   2025-09-02
+# Mtime     :   2025-09-02
+# License   :   AGPLv3 @ https://pigsty.io/docs/about/license
+# Copyright :   2025  Pigsty Community, B.J. Lawson
+#==============================================================#
+
+#----------------------------------------------#
+# Stop and disable legacy observability services
+#----------------------------------------------#
+- name: Disable Legacy Observability Stack
+  hosts: all
+  become: true
+  gather_facts: false
+  any_errors_fatal: false
+  tags: [cleanup, legacy, disable]
+
+  tasks:
+    - name: Stop and disable legacy services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop:
+        - promtail
+        - prometheus
+        - loki
+      ignore_errors: true
+      register: service_stop_results
+
+    - name: Show service stop results
+      debug:
+        msg: "{{ item.item }}: {{ 'Stopped' if item.changed else 'Already stopped or not found' }}"
+      loop: "{{ service_stop_results.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+#----------------------------------------------#
+# Remove legacy configuration files  
+#----------------------------------------------#
+- name: Remove Legacy Configuration
+  hosts: all
+  become: true
+  gather_facts: false
+  tags: [cleanup, legacy, config]
+
+  tasks:
+    - name: Remove legacy service configuration directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/promtail/
+        - /etc/prometheus/ 
+        - /etc/loki/
+        - /var/lib/promtail/
+        - /var/log/promtail/
+      register: config_cleanup
+
+    - name: Remove legacy systemd service files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/systemd/system/promtail.service
+        - /etc/systemd/system/prometheus.service
+        - /etc/systemd/system/loki.service
+      notify: reload systemd
+
+    - name: Show cleanup results
+      debug:
+        msg: |
+          Legacy configuration cleanup completed.
+          Removed: {{ config_cleanup.results | selectattr('changed') | list | length }} directories
+          
+  handlers:
+    - name: reload systemd
+      systemd:
+        daemon_reload: true
+
+#----------------------------------------------#
+# Optional: Remove legacy data (BE CAREFUL!)
+#----------------------------------------------#
+- name: Remove Legacy Data (OPTIONAL - DESTRUCTIVE)
+  hosts: all
+  become: true
+  gather_facts: false
+  tags: [cleanup, legacy, data, never]  # Note: 'never' tag prevents accidental runs
+
+  tasks:
+    - name: DANGER - Remove legacy data directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /var/lib/prometheus/
+        - /var/lib/loki/
+      when: legacy_data_removal_confirmed|default(false)|bool
+
+    - name: Data removal warning
+      debug:
+        msg: |
+          ⚠️  LEGACY DATA REMOVAL SKIPPED ⚠️
+          
+          To remove legacy data directories, run:
+          ansible-playbook disable-legacy-stack.yml --tags data \
+            -e legacy_data_removal_confirmed=true
+          
+          This will PERMANENTLY DELETE:
+          - /var/lib/prometheus/ (all metrics history)
+          - /var/lib/loki/ (all log history)
+      when: not (legacy_data_removal_confirmed|default(false)|bool)
+
+#----------------------------------------------#
+# Summary and next steps
+#----------------------------------------------#
+- name: Legacy Stack Cleanup Summary
+  hosts: localhost
+  gather_facts: false
+  tags: [cleanup, legacy, summary]
+
+  tasks:
+    - name: Cleanup summary
+      debug:
+        msg: |
+          🧹 Legacy Stack Cleanup Complete!
+          
+          ✅ Services stopped and disabled:
+          - promtail (deprecated log agent)
+          - prometheus (replaced by VictoriaMetrics)  
+          - loki (replaced by VictoriaLogs)
+          
+          ✅ Configuration files removed:
+          - /etc/promtail/, /etc/prometheus/, /etc/loki/
+          
+          ⏭️  Next Steps:
+          1. Verify Victoria stack is running: ansible-playbook victoria.yml --tags validate
+          2. Check Grafana data sources are working
+          3. Confirm Docker logs are being collected
+          4. Monitor resource usage improvements
+          
+          💾 Data Preservation:
+          Legacy data directories preserved unless explicitly removed.
+          Historical metrics/logs remain in /var/lib/prometheus/ and /var/lib/loki/

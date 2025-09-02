@@ -1,0 +1,24 @@
+---
+#--------------------------------------------------------------#
+# VICTORIA LOGS
+#--------------------------------------------------------------#
+victoria_logs_enabled: true          # enable victoria logs on this node?
+victoria_logs_port: 9428             # victoria logs listen port
+victoria_logs_data_dir: /var/lib/victorialogs  # data storage directory
+victoria_logs_config_dir: /etc/victorialogs    # configuration directory
+victoria_logs_log_level: INFO        # log level: DEBUG, INFO, WARN, ERROR
+victoria_logs_retention_months: 12   # log retention in months
+victoria_logs_max_disk_usage_bytes: 0  # max disk usage, 0 = unlimited
+
+#--------------------------------------------------------------#
+# VICTORIA LOGS CLUSTER (future expansion)
+#--------------------------------------------------------------#
+victoria_logs_cluster: false         # enable cluster mode?
+victoria_logs_replication_factor: 1  # replication factor for cluster mode
+
+#--------------------------------------------------------------#
+# PERFORMANCE TUNING
+#--------------------------------------------------------------#
+victoria_logs_max_concurrent_inserts: 32    # max concurrent insert requests
+victoria_logs_max_labels_per_timeseries: 30 # max labels per log entry
+victoria_logs_memory_limit: ""              # memory limit (e.g., "4GB"), empty = auto

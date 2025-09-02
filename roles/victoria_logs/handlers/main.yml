@@ -1,0 +1,7 @@
+---
+- name: restart victorialogs
+  systemd:
+    name: victorialogs
+    state: restarted
+    daemon_reload: true
+  when: victoria_logs_enabled|bool
