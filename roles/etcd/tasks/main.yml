@@ -84,7 +84,7 @@
 #--------------------------------------------------------------#
 - name: register etcd as prometheus target
   tags: [ etcd_register, register_prometheus ]
-  when: prometheus_enabled|bool
+  when: prometheus_enabled|bool or prometheus_service_discovery_enabled|bool
   ignore_errors: true
   delegate_to: '{{ item }}'
   with_items: '{{ groups["infra"]|default([]) }}'
