@@ -8,13 +8,26 @@ Wants=network-online.target
 Type=simple
 User=vlagent
 Group=vlagent
+{% if docker_enabled|default(false) and vlagent_docker_group_exists|default(false) %}
 ExecStart=/usr/bin/vlagent \
     -httpListenAddr=:{{ vlagent_port }} \
     -loggerLevel={{ vlagent_log_level }} \
-    -remoteWrite.url=http://{{ groups['infra'][0] }}:9428/internal/insert \
+{% for host in groups['infra'] %}
+    -remoteWrite.url=http://{{ host }}:9428/internal/insert \
+{% endfor %}
     -journald.streamFields=UNIT,HOSTNAME \
-    -journald.tenantID=0:0{% if docker_enabled|default(false) and vlagent_docker_group_exists|default(false) %} \
-    -dockerswarm.streamFields=container_name,service_name{% endif %}
+    -journald.tenantID=0:0 \
+    -dockerswarm.streamFields=container_name,service_name
+{% else %}
+ExecStart=/usr/bin/vlagent \
+    -httpListenAddr=:{{ vlagent_port }} \
+    -loggerLevel={{ vlagent_log_level }} \
+{% for host in groups['infra'] %}
+    -remoteWrite.url=http://{{ host }}:9428/internal/insert \
+{% endfor %}
+    -journald.streamFields=UNIT,HOSTNAME \
+    -journald.tenantID=0:0
+{% endif %}
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure
