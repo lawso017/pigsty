@@ -8,10 +8,12 @@ Wants=network-online.target
 Type=simple
 User=vlagent
 Group=vlagent
+WorkingDirectory={{ vlagent_data_dir }}
 {% if docker_enabled|default(false) and vlagent_docker_group_exists|default(false) %}
 ExecStart=/usr/bin/vlagent \
     -httpListenAddr=:{{ vlagent_port }} \
     -loggerLevel={{ vlagent_log_level }} \
+    -remotewrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
 {% for host in groups['infra'] %}
     -remoteWrite.url=http://{{ host }}:9428/internal/insert \
 {% endfor %}
@@ -22,6 +24,7 @@ ExecStart=/usr/bin/vlagent \
 ExecStart=/usr/bin/vlagent \
     -httpListenAddr=:{{ vlagent_port }} \
     -loggerLevel={{ vlagent_log_level }} \
+    -remotewrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
 {% for host in groups['infra'] %}
     -remoteWrite.url=http://{{ host }}:9428/internal/insert \
 {% endfor %}
