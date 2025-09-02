@@ -11,15 +11,11 @@ vector_log_level: info                  # log level: error, warn, info, debug, t
 #--------------------------------------------------------------#
 # VECTOR TARGETS (where to send logs)
 #--------------------------------------------------------------#
-# Send logs to local vlagent instances on infra nodes
-vector_vlagent_enabled: true            # send logs to vlagent?
-vector_vlagent_endpoints: >-
-  [{% for host in groups['infra']|default([]) %}"http://{{ host }}:{{ vlagent_port|default(9080) }}/insert/jsonline"{% if not loop.last %},{% endif %}{% endfor %}]
+# Send logs directly to VictoriaLogs (recommended)
+vector_victorialogs_enabled: true       # send logs directly to VictoriaLogs?
 
-# Alternative: Send directly to VictoriaLogs (bypass vlagent)
-vector_victorialogs_enabled: false      # send logs directly to VictoriaLogs?
-vector_victorialogs_endpoints: >-
-  [{% for host in groups['infra']|default([]) %}"http://{{ host }}:9428/insert/jsonline"{% if not loop.last %},{% endif %}{% endfor %}]
+# Disable vlagent (no longer needed)
+vector_vlagent_enabled: false           # vlagent not needed for direct mode
 
 #--------------------------------------------------------------#
 # LOG COLLECTION SETTINGS

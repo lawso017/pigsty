@@ -55,31 +55,10 @@
       debug:
         msg: |
           Vector deployed on: {{ inventory_hostname }}:{{ vector_port }}
-          Target: {{ 'vlagent' if vector_vlagent_enabled else 'VictoriaLogs direct' }}
+          Target: VictoriaLogs direct (HA to all infra nodes)
           Docker logging: {{ vector_docker_enabled }}
           PostgreSQL logging: {{ vector_postgres_enabled|default(false) }}
 
-#----------------------------------------------#  
-# Deploy vlagent on infra nodes for log forwarding
-#----------------------------------------------#
-- name: Deploy vlagent Log Forwarder
-  hosts: infra
-  become: true
-  gather_facts: true
-  any_errors_fatal: true
-  tags: [victoria, vlagent, logs]
-
-  roles:
-    - role: vlagent
-      tags: [vlagent]
-
-  post_tasks:
-    - name: vlagent deployment summary
-      debug:
-        msg: |
-          vlagent deployed on: {{ inventory_hostname }}:{{ vlagent_port }}
-          Accepting logs from Vector instances
-          Forwarding to VictoriaLogs instances
 
 #----------------------------------------------#
 # Update Grafana data sources (if grafana enabled)
@@ -234,3 +213,10 @@
           VictoriaMetrics: http://{{ inventory_hostname }}:{{ victoria_metrics_port }}
           VictoriaLogs: http://{{ inventory_hostname }}:{{ victoria_logs_port }}
           vmalert: http://{{ inventory_hostname }}:{{ vmalert_port }}
+          
+          📊 Next Steps:
+          1. Check Grafana data sources are updated
+          2. Verify Vector is collecting logs from files and Docker
+          3. Verify logs are arriving in VictoriaLogs directly
+          4. Test queries in Grafana explore
+          5. Monitor resource usage vs old stack (should be more efficient!)

@@ -81,8 +81,8 @@
 
     - name: render vector configuration
       template:
-        src: vector.toml
-        dest: "{{ vector_config_dir }}/vector.toml"
+        src: vector.yaml
+        dest: "{{ vector_config_dir }}/vector.yaml"
         owner: vector
         group: vector
         mode: '0644'
