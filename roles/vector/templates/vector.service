@@ -9,7 +9,8 @@ Type=simple
 User=vector
 Group=vector
 WorkingDirectory={{ vector_data_dir }}
-ExecStart=/usr/bin/vector --config {{ vector_config_dir }}/vector.yaml --log-level {{ vector_log_level }}
+Environment=VECTOR_LOG={{ vector_log_level }}
+ExecStart=/usr/bin/vector --config {{ vector_config_dir }}/vector.yaml
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure

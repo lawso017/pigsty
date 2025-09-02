@@ -269,12 +269,22 @@ sinks:
   victorialogs_{{ loop.index }}:
     type: http
     inputs:
-{% if vector_syslog_enabled %}      - syslog_parsed{% endif %}
-{% if vector_docker_enabled %}      - docker_parsed{% endif %}
-{% if pg_cluster is defined and pg_seq is defined and vector_postgres_enabled %}      - postgres_parsed{% endif %}
-{% if inventory_hostname in groups["infra"]|default([]) and vector_nginx_enabled %}      - nginx_access_parsed
-      - nginx_error_parsed{% endif %}
-{% if redis_cluster is defined and redis_node is defined and vector_redis_enabled %}      - redis_parsed{% endif %}
+{% if vector_syslog_enabled %}
+      - syslog_parsed
+{% endif %}
+{% if vector_docker_enabled %}
+      - docker_parsed
+{% endif %}
+{% if pg_cluster is defined and pg_seq is defined and vector_postgres_enabled %}
+      - postgres_parsed
+{% endif %}
+{% if inventory_hostname in groups["infra"]|default([]) and vector_nginx_enabled %}
+      - nginx_access_parsed
+      - nginx_error_parsed
+{% endif %}
+{% if redis_cluster is defined and redis_node is defined and vector_redis_enabled %}
+      - redis_parsed
+{% endif %}
 
     # VictoriaLogs endpoint
     uri: "http://{{ infra_host }}:9428/insert/jsonline"
