@@ -55,6 +55,14 @@
       notify: restart victorialogs
 
 #--------------------------------------------------------------#
+# Flush handlers to ensure service restarts if config changed
+#--------------------------------------------------------------#
+- name: flush handlers to restart service if config changed
+  tags: [victoria_logs, victoria_logs_launch]
+  when: victoria_logs_enabled|bool
+  meta: flush_handlers
+
+#--------------------------------------------------------------#
 # Launch VictoriaLogs                         [victoria_logs_launch]
 #--------------------------------------------------------------#
 - name: launch victoria logs

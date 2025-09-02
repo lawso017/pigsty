@@ -46,6 +46,14 @@
       notify: restart victoriametrics
 
 #--------------------------------------------------------------#
+# Flush handlers to ensure service restarts if config changed
+#--------------------------------------------------------------#
+- name: flush handlers to restart service if config changed
+  tags: [victoria_metrics, victoria_metrics_launch]
+  when: victoria_metrics_enabled|bool
+  meta: flush_handlers
+
+#--------------------------------------------------------------#
 # Launch VictoriaMetrics                    [victoria_metrics_launch]
 #--------------------------------------------------------------#
 - name: launch victoria metrics
