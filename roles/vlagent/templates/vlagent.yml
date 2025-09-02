@@ -169,7 +169,7 @@ scrape_configs:
           ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ pg_log_dir }}/*
+          __path__: {{ pg_log_dir|default('/pg/log/postgres') }}/*
 
 {% if patroni_enabled is defined and patroni_enabled|bool %}
   # Patroni logs
@@ -183,7 +183,7 @@ scrape_configs:
           ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ patroni_log_dir }}/patroni.log
+          __path__: {{ patroni_log_dir|default('/pg/log/patroni') }}/patroni.log
 {% endif %}
 
 {% if pgbackrest_enabled is defined and pgbackrest_enabled|bool %}
@@ -198,7 +198,7 @@ scrape_configs:
           ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ pgbackrest_log_dir }}/*.log
+          __path__: {{ pgbackrest_log_dir|default('/pg/log/pgbackrest') }}/*.log
 {% endif %}
 
 {% if pgbouncer_enabled is defined and pgbouncer_enabled|bool %}
@@ -213,7 +213,7 @@ scrape_configs:
           ins: "{{ pg_cluster }}-{{ pg_seq }}"
           instance: "{{ inventory_hostname }}"
           cluster: "{{ node_cluster|default('nodes') }}"
-          __path__: {{ pgbouncer_log_dir }}/pgbouncer.log
+          __path__: {{ pgbouncer_log_dir|default('/pg/log/pgbouncer') }}/pgbouncer.log
 {% endif %}
 
 {% endif %}
