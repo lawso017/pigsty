@@ -14,7 +14,7 @@ storageDataPath: "{{ victoria_logs_data_dir }}"
 logLevel: "{{ victoria_logs_log_level }}"
 
 # Retention settings
-retentionMonths: {{ victoria_logs_retention_months }}
+retentionPeriod: {{ victoria_logs_retention_period }}
 
 {% if victoria_logs_max_disk_usage_bytes > 0 %}
 # Disk usage limit
