@@ -1,0 +1,129 @@
+---
+#--------------------------------------------------------------#
+# Install Vector                                [vector_install]
+#--------------------------------------------------------------#
+- name: install vector
+  tags: [vector, vector_install]
+  when: vector_enabled|bool
+  block:
+    - name: install vector package
+      package:
+        name: vector
+        state: present
+
+    - name: create vector user
+      user:
+        name: vector
+        system: true
+        shell: /bin/false
+        home: "{{ vector_data_dir }}"
+        create_home: false
+
+    - name: add vector to docker group (if docker enabled on this host)
+      user:
+        name: vector
+        groups: docker
+        append: true
+      when: docker_enabled|default(false)
+      ignore_errors: true  # Don't fail if docker group doesn't exist yet
+
+    - name: add vector to postgres group (for PostgreSQL log access)
+      user:
+        name: vector
+        groups: postgres
+        append: true
+      when: "'pg-' in group_names"
+      ignore_errors: true  # Don't fail if postgres group doesn't exist yet
+
+    - name: add vector to adm group (for system and nginx log access)
+      user:
+        name: vector
+        groups: adm
+        append: true
+      ignore_errors: true  # Don't fail if adm group doesn't exist yet
+
+    - name: create vector directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: vector
+        group: vector
+        mode: '0755'
+      loop:
+        - "{{ vector_config_dir }}"
+        - "{{ vector_data_dir }}"
+        - /var/log/vector
+
+#--------------------------------------------------------------#
+# Config Vector                                [vector_config]
+#--------------------------------------------------------------#
+- name: config vector
+  tags: [vector, vector_config]
+  when: vector_enabled|bool
+  block:
+    # Set postgres log collection based on node type
+    - name: set postgres log collection for database nodes
+      set_fact:
+        vector_postgres_enabled: true
+      when: "'pg-' in group_names"
+
+    # Set nginx log collection for infra nodes
+    - name: set nginx log collection for infra nodes
+      set_fact:
+        vector_nginx_enabled: true
+      when: "inventory_hostname in groups['infra']|default([])"
+
+    # Set redis log collection for redis nodes
+    - name: set redis log collection for redis nodes
+      set_fact:
+        vector_redis_enabled: true
+      when: "redis_cluster is defined and redis_node is defined"
+
+    - name: render vector configuration
+      template:
+        src: vector.toml
+        dest: "{{ vector_config_dir }}/vector.toml"
+        owner: vector
+        group: vector
+        mode: '0644'
+      notify: restart vector
+
+    - name: render vector systemd service
+      template:
+        src: vector.service
+        dest: /etc/systemd/system/vector.service
+        mode: '0644'
+        force: yes
+      notify: restart vector
+      register: vector_service_result
+
+    - name: debug systemd service template result
+      debug:
+        msg: |
+          template changed: {{ vector_service_result.changed }}
+          dest: {{ vector_service_result.dest|default('undefined') }}
+          backup_file: {{ vector_service_result.backup_file|default('none') }}
+
+#--------------------------------------------------------------#
+# Launch Vector                               [vector_launch]
+#--------------------------------------------------------------#
+- name: launch vector
+  tags: [vector, vector_launch]
+  when: vector_enabled|bool
+  block:
+    - name: reload systemd daemon
+      systemd:
+        daemon_reload: true
+
+    - name: start and enable vector service
+      systemd:
+        name: vector
+        state: started
+        enabled: true
+
+    - name: wait for vector API online
+      wait_for:
+        host: 127.0.0.1
+        port: "{{ vector_port }}"
+        state: started
+        timeout: 30

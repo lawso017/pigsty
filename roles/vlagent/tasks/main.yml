@@ -85,14 +85,6 @@
           vlagent_docker_group_exists: {{ vlagent_docker_group_exists|default(false) }}
           docker_group_check.rc: {{ docker_group_check.rc|default('undefined') }}
 
-    - name: render vlagent configuration
-      template:
-        src: vlagent.yml
-        dest: "{{ vlagent_config_dir }}/vlagent.yml"
-        owner: vlagent
-        group: vlagent
-        mode: '0644'
-      notify: restart vlagent
 
     - name: render vlagent systemd service
       template:

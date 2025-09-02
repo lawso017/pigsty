@@ -1,0 +1,38 @@
+[Unit]
+Description=Vector - High-performance log collection agent
+Documentation=https://vector.dev/docs/
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vector
+Group=vector
+WorkingDirectory={{ vector_data_dir }}
+ExecStart=/usr/bin/vector --config {{ vector_config_dir }}/vector.toml
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths={{ vector_data_dir }} /var/log{% if vector_docker_enabled %} /var/lib/docker/containers{% endif %}{% if pg_cluster is defined and pg_seq is defined %} {{ vector_postgres_log_dir }}{% endif %}
+
+PrivateTmp=true
+{% if vector_docker_enabled %}
+SupplementaryGroups=docker
+{% endif %}
+{% if pg_cluster is defined and pg_seq is defined %}
+SupplementaryGroups=postgres
+{% endif %}
+{% if inventory_hostname in groups["infra"]|default([]) %}
+SupplementaryGroups=adm
+{% endif %}
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

@@ -37,10 +37,33 @@
           Health checks: VM {{ vm_health_check.status|default('unknown') }} | vmalert {{ vmalert_health_check.status|default('unknown') }}
 
 #----------------------------------------------#  
-# Deploy vlagent on all nodes for log collection
+# Deploy Vector for log collection on all nodes
 #----------------------------------------------#
-- name: Deploy vlagent on All Nodes
+- name: Deploy Vector Log Collection
   hosts: all
+  become: true
+  gather_facts: true
+  any_errors_fatal: true
+  tags: [victoria, vector, logs]
+
+  roles:
+    - role: vector
+      tags: [vector]
+
+  post_tasks:
+    - name: Vector deployment summary
+      debug:
+        msg: |
+          Vector deployed on: {{ inventory_hostname }}:{{ vector_port }}
+          Target: {{ 'vlagent' if vector_vlagent_enabled else 'VictoriaLogs direct' }}
+          Docker logging: {{ vector_docker_enabled }}
+          PostgreSQL logging: {{ vector_postgres_enabled|default(false) }}
+
+#----------------------------------------------#  
+# Deploy vlagent on infra nodes for log forwarding
+#----------------------------------------------#
+- name: Deploy vlagent Log Forwarder
+  hosts: infra
   become: true
   gather_facts: true
   any_errors_fatal: true
@@ -55,9 +78,8 @@
       debug:
         msg: |
           vlagent deployed on: {{ inventory_hostname }}:{{ vlagent_port }}
-          Remote write target: {{ vlagent_remote_write_url }}
-          Docker logging: {{ vlagent_docker_enabled }}
-          PostgreSQL logging: {{ vlagent_postgres_enabled|default(false) }}
+          Accepting logs from Vector instances
+          Forwarding to VictoriaLogs instances
 
 #----------------------------------------------#
 # Update Grafana data sources (if grafana enabled)
@@ -112,7 +134,7 @@
             - name: Meta
               type: postgres
               uid: ds-meta
-              url: 127.0.0.1:5432
+              url: pg-util:5436
               access: proxy
               user: dbuser_view
               database: meta
@@ -212,9 +234,3 @@
           VictoriaMetrics: http://{{ inventory_hostname }}:{{ victoria_metrics_port }}
           VictoriaLogs: http://{{ inventory_hostname }}:{{ victoria_logs_port }}
           vmalert: http://{{ inventory_hostname }}:{{ vmalert_port }}
-          
-          📊 Next Steps:
-          1. Check Grafana data sources are updated
-          2. Verify Docker container logs are being collected
-          3. Test queries in Grafana explore
-          4. Monitor resource usage vs old stack

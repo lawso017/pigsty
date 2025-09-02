@@ -1,0 +1,69 @@
+---
+#--------------------------------------------------------------#
+# VECTOR (Log Collection Agent)
+#--------------------------------------------------------------#
+vector_enabled: true                    # enable vector on this node?
+vector_port: 8686                       # vector API port
+vector_config_dir: /etc/vector          # vector configuration directory
+vector_data_dir: /var/lib/vector        # vector data directory
+vector_log_level: info                  # log level: error, warn, info, debug, trace
+
+#--------------------------------------------------------------#
+# VECTOR TARGETS (where to send logs)
+#--------------------------------------------------------------#
+# Send logs to local vlagent instances on infra nodes
+vector_vlagent_enabled: true            # send logs to vlagent?
+vector_vlagent_endpoints: >-
+  [{% for host in groups['infra']|default([]) %}"http://{{ host }}:{{ vlagent_port|default(9080) }}/insert/jsonline"{% if not loop.last %},{% endif %}{% endfor %}]
+
+# Alternative: Send directly to VictoriaLogs (bypass vlagent)
+vector_victorialogs_enabled: false      # send logs directly to VictoriaLogs?
+vector_victorialogs_endpoints: >-
+  [{% for host in groups['infra']|default([]) %}"http://{{ host }}:9428/insert/jsonline"{% if not loop.last %},{% endif %}{% endfor %}]
+
+#--------------------------------------------------------------#
+# LOG COLLECTION SETTINGS
+#--------------------------------------------------------------#
+
+# System log collection
+vector_syslog_enabled: true             # collect system logs?
+vector_syslog_paths:
+  - "/var/log/syslog"                    # Ubuntu/Debian
+  - "/var/log/messages"                  # RHEL/CentOS
+
+# Docker log collection
+vector_docker_enabled: true             # collect docker container logs?
+vector_docker_socket: "unix:///var/run/docker.sock"
+
+# PostgreSQL log collection (for database nodes) - JSON format logs
+vector_postgres_enabled: false          # collect postgresql logs? (set per node)
+vector_postgres_log_dir: "/pg/log"      # postgresql log directory
+vector_postgres_log_pattern: "postgres/*.json"  # PostgreSQL JSON logs
+
+# Nginx log collection (for infra nodes)
+vector_nginx_enabled: false             # collect nginx logs? (set per node)
+vector_nginx_access_logs: "/var/log/nginx/access.log"
+vector_nginx_error_logs: "/var/log/nginx/error.log"
+
+# Redis log collection (for redis nodes)
+vector_redis_enabled: false             # collect redis logs? (set per node)  
+vector_redis_log_dir: "/var/log/redis"
+vector_redis_log_pattern: "*.log"
+
+#--------------------------------------------------------------#
+# VECTOR PERFORMANCE SETTINGS  
+#--------------------------------------------------------------#
+vector_buffer_max_events: 10000         # max events in memory buffer
+vector_buffer_when_full: "block"        # what to do when buffer full: block, drop_newest
+vector_batch_max_events: 1000           # max events per batch
+vector_batch_timeout_ms: 5000           # batch timeout in milliseconds
+vector_compression: "gzip"              # compression: none, gzip, lz4, snappy
+vector_healthcheck_enabled: false       # enable health checks (can cause issues)
+
+#--------------------------------------------------------------#
+# STREAM FIELDS (for VictoriaLogs)
+#--------------------------------------------------------------#
+# Fields used for log stream identification in VictoriaLogs
+vector_stream_fields: "host,job,src"    # comma-separated stream fields
+vector_msg_field: "message"             # field containing log message
+vector_time_field: "timestamp"          # field containing timestamp

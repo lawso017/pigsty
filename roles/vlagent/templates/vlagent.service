@@ -9,7 +9,6 @@ Type=simple
 User=vlagent
 Group=vlagent
 WorkingDirectory={{ vlagent_data_dir }}
-{% if docker_enabled|default(false) and vlagent_docker_group_exists|default(false) %}
 ExecStart=/usr/bin/vlagent \
     -httpListenAddr=:{{ vlagent_port }} \
     -loggerLevel={{ vlagent_log_level }} \
@@ -17,20 +16,6 @@ ExecStart=/usr/bin/vlagent \
 {% for host in groups['infra'] %}
     -remoteWrite.url=http://{{ host }}:3100/internal/insert \
 {% endfor %}
-    -journald.streamFields=UNIT,HOSTNAME \
-    -journald.tenantID=0:0 \
-    -dockerswarm.streamFields=container_name,service_name
-{% else %}
-ExecStart=/usr/bin/vlagent \
-    -httpListenAddr=:{{ vlagent_port }} \
-    -loggerLevel={{ vlagent_log_level }} \
-    -remoteWrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
-{% for host in groups['infra'] %}
-    -remoteWrite.url=http://{{ host }}:3100/internal/insert \
-{% endfor %}
-    -journald.streamFields=UNIT,HOSTNAME \
-    -journald.tenantID=0:0
-{% endif %}
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure
@@ -41,12 +26,9 @@ LimitNOFILE=65536
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths={{ vlagent_data_dir }} /var/log{% if docker_enabled|default(false) and vlagent_docker_group_exists|default(false) %} /var/lib/docker/containers{% endif %}
+ReadWritePaths={{ vlagent_data_dir }}
 
 PrivateTmp=true
-{% if docker_enabled|default(false) and vlagent_docker_group_exists|default(false) %}
-SupplementaryGroups=docker
-{% endif %}
 RestrictSUIDSGID=true
 
 [Install]
