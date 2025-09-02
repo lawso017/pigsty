@@ -15,7 +15,7 @@ ExecStart=/usr/bin/vlagent \
     -loggerLevel={{ vlagent_log_level }} \
     -remoteWrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
 {% for host in groups['infra'] %}
-    -remoteWrite.url=http://{{ host }}:9428/internal/insert \
+    -remoteWrite.url=http://{{ host }}:3100/internal/insert \
 {% endfor %}
     -journald.streamFields=UNIT,HOSTNAME \
     -journald.tenantID=0:0 \
@@ -26,7 +26,7 @@ ExecStart=/usr/bin/vlagent \
     -loggerLevel={{ vlagent_log_level }} \
     -remoteWrite.tmpDataPath={{ vlagent_data_dir }}/remotewrite-data \
 {% for host in groups['infra'] %}
-    -remoteWrite.url=http://{{ host }}:9428/internal/insert \
+    -remoteWrite.url=http://{{ host }}:3100/internal/insert \
 {% endfor %}
     -journald.streamFields=UNIT,HOSTNAME \
     -journald.tenantID=0:0

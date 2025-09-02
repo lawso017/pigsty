@@ -3,7 +3,7 @@
 # VICTORIA LOGS
 #--------------------------------------------------------------#
 victoria_logs_enabled: true          # enable victoria logs on this node?
-victoria_logs_port: 9428             # victoria logs listen port
+victoria_logs_port: 3100             # victoria logs listen port (Loki compatible)
 victoria_logs_data_dir: /var/lib/victorialogs  # data storage directory
 victoria_logs_config_dir: /etc/victorialogs    # configuration directory
 victoria_logs_log_level: INFO        # log level: DEBUG, INFO, WARN, ERROR
