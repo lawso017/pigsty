@@ -124,6 +124,10 @@
   become: false
   gather_facts: false
   tags: [victoria, validate]
+  vars_files:
+    - "roles/victoria_metrics/defaults/main.yml"
+    - "roles/victoria_logs/defaults/main.yml"
+    - "roles/vmalert/defaults/main.yml"
 
   tasks:
     - name: Check VictoriaMetrics health
