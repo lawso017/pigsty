@@ -8,8 +8,8 @@ vlagent_config_dir: /etc/vlagent     # vlagent configuration directory
 vlagent_data_dir: /var/lib/vlagent   # vlagent data directory
 vlagent_log_level: INFO              # log level: DEBUG, INFO, WARN, ERROR
 
-# VictoriaLogs endpoint
-vlagent_remote_write_url: "http://{{ groups['infra'][0] }}:9428/insert/jsonline"
+# VictoriaLogs endpoint (using proper /internal/insert endpoint)
+vlagent_remote_write_url: "http://{{ groups['infra'][0] }}:9428/internal/insert"
 
 #--------------------------------------------------------------#
 # LOG COLLECTION SETTINGS
