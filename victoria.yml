@@ -24,6 +24,8 @@
       tags: [victoria_metrics, metrics]
     - role: victoria_logs  
       tags: [victoria_logs, logs]
+    - role: vmalert
+      tags: [vmalert, alerts, recording_rules]
 
   post_tasks:
     - name: Victoria stack deployment summary
@@ -31,7 +33,8 @@
         msg: |
           VictoriaMetrics deployed on: {{ inventory_hostname }}:{{ victoria_metrics_port }}
           VictoriaLogs deployed on: {{ inventory_hostname }}:{{ victoria_logs_port }}
-          Health checks: VM {{ vm_health_check.status|default('unknown') }}
+          vmalert deployed on: {{ inventory_hostname }}:{{ vmalert_port }}
+          Health checks: VM {{ vm_health_check.status|default('unknown') }} | vmalert {{ vmalert_health_check.status|default('unknown') }}
 
 #----------------------------------------------#  
 # Deploy vlagent on all nodes for log collection
@@ -135,6 +138,12 @@
         method: GET
       register: vl_health
 
+    - name: Check vmalert health
+      uri:
+        url: "http://{{ inventory_hostname }}:{{ vmalert_port }}/health"
+        method: GET
+      register: vmalert_health
+
     - name: Victoria stack health summary
       debug:
         msg: |
@@ -142,10 +151,12 @@
           
           VictoriaMetrics: {{ 'Healthy' if vm_health.status == 200 else 'Unhealthy' }}
           VictoriaLogs: {{ 'Healthy' if vl_health.status == 200 else 'Unhealthy' }}
+          vmalert: {{ 'Healthy' if vmalert_health.status == 200 else 'Unhealthy' }}
           
           🔗 Access URLs:
           VictoriaMetrics: http://{{ inventory_hostname }}:{{ victoria_metrics_port }}
           VictoriaLogs: http://{{ inventory_hostname }}:{{ victoria_logs_port }}
+          vmalert: http://{{ inventory_hostname }}:{{ vmalert_port }}
           
           📊 Next Steps:
           1. Check Grafana data sources are updated

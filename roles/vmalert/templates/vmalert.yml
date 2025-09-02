@@ -1,0 +1,20 @@
+# vmalert configuration file
+# {{ ansible_managed }}
+
+# Global configuration
+groups:
+  # This is a placeholder config file
+  # vmalert will load rules from {{ vmalert_rules_dir }}/*.yml files
+  # which contain the actual Prometheus recording and alerting rules
+
+  - name: vmalert-health
+    rules:
+      - alert: vmalertDown
+        expr: up{job="vmalert"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: vmalert
+        annotations:
+          summary: "vmalert instance is down"
+          description: "vmalert instance {{ $labels.instance }} has been down for more than 1 minute"

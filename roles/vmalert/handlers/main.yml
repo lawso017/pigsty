@@ -1,0 +1,6 @@
+---
+- name: restart vmalert
+  systemd:
+    name: vmalert
+    state: restarted
+    daemon_reload: true

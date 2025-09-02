@@ -1,0 +1,29 @@
+---
+#--------------------------------------------------------------#
+# vmalert default parameters
+#--------------------------------------------------------------#
+vmalert_enabled: true                    # enable vmalert service?
+vmalert_port: 8880                       # vmalert http port
+vmalert_user: vmalert                    # vmalert user
+vmalert_group: vmalert                   # vmalert group
+vmalert_config_dir: /etc/vmalert         # vmalert config directory
+vmalert_log_level: INFO                  # vmalert log level: DEBUG, INFO, WARN, ERROR
+vmalert_data_dir: /var/lib/vmalert       # vmalert data directory
+
+# VictoriaMetrics connection
+victoria_metrics_url: "http://127.0.0.1:{{ victoria_metrics_port|default(9090) }}"    # VictoriaMetrics URL for queries and recording rules
+victoria_metrics_write_url: "http://127.0.0.1:{{ victoria_metrics_port|default(9090) }}" # VictoriaMetrics URL for writing recording rules
+
+# AlertManager connection
+vmalert_alertmanager_enabled: "{{ alertmanager_enabled|default(true) }}"  # enable alertmanager integration?
+alertmanager_url: "http://127.0.0.1:{{ alertmanager_port|default(9093) }}" # AlertManager URL for sending alerts
+
+# Rules configuration
+vmalert_rules_dir: /etc/prometheus/rules # directory containing Prometheus rule files
+vmalert_evaluation_interval: 15s        # how often to evaluate rules
+vmalert_external_labels: {}              # external labels to add to alerts
+
+# vmalert service configuration
+vmalert_max_concurrent_requests: 8       # max concurrent requests to VictoriaMetrics
+vmalert_query_timeout: 30s               # query timeout
+vmalert_rule_update_entries_limit: 20000 # max entries for rule updates

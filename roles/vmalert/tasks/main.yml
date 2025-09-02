@@ -1,0 +1,95 @@
+---
+#--------------------------------------------------------------#
+# Install vmalert                              [vmalert_install]
+#--------------------------------------------------------------#
+- name: install vmalert
+  tags: [vmalert, vmalert_install]
+  when: vmalert_enabled|bool
+  block:
+    - name: install vmutils package (contains vmalert)
+      package:
+        name: vmutils
+        state: present
+
+    - name: create vmalert user
+      user:
+        name: "{{ vmalert_user }}"
+        system: true
+        shell: /bin/false
+        home: "{{ vmalert_data_dir }}"
+        create_home: false
+        groups: prometheus
+        append: true
+
+    - name: create vmalert directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ vmalert_user }}"
+        group: "{{ vmalert_group }}"
+        mode: '0755'
+      loop:
+        - "{{ vmalert_config_dir }}"
+        - "{{ vmalert_data_dir }}"
+        - /var/log/vmalert
+
+#--------------------------------------------------------------#
+# Config vmalert                                [vmalert_config]
+#--------------------------------------------------------------#
+- name: config vmalert
+  tags: [vmalert, vmalert_config]
+  when: vmalert_enabled|bool
+  block:
+    - name: render vmalert systemd service
+      template:
+        src: vmalert.service
+        dest: /etc/systemd/system/vmalert.service
+        mode: '0644'
+      notify: restart vmalert
+
+    - name: render vmalert config file
+      template:
+        src: vmalert.yml
+        dest: "{{ vmalert_config_dir }}/vmalert.yml"
+        owner: "{{ vmalert_user }}"
+        group: "{{ vmalert_group }}"
+        mode: '0644'
+      notify: restart vmalert
+
+#--------------------------------------------------------------#
+# Launch vmalert                                [vmalert_launch]
+#--------------------------------------------------------------#
+- name: launch vmalert
+  tags: [vmalert, vmalert_launch]
+  when: vmalert_enabled|bool
+  block:
+    - name: reload systemd daemon
+      systemd:
+        daemon_reload: true
+
+    - name: start and enable vmalert service
+      systemd:
+        name: vmalert
+        state: started
+        enabled: true
+
+    - name: wait for vmalert service online
+      wait_for:
+        host: 127.0.0.1
+        port: "{{ vmalert_port }}"
+        state: started
+        timeout: 60
+
+#--------------------------------------------------------------#
+# vmalert Health Check                          [vmalert_check]
+#--------------------------------------------------------------#
+- name: check vmalert health
+  tags: [vmalert, vmalert_check]
+  when: vmalert_enabled|bool
+  uri:
+    url: "http://127.0.0.1:{{ vmalert_port }}/health"
+    method: GET
+    status_code: 200
+  register: vmalert_health_check
+  retries: 3
+  delay: 5
