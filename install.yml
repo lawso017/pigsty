@@ -101,7 +101,6 @@
   hosts: infra
   gather_facts: no
   tags: [ victoria, victoria-infra ]
-  when: victoria_metrics_enabled|default(false) or victoria_logs_enabled|default(false)
   roles:
     - { role: victoria_metrics, tags: victoria_metrics, when: victoria_metrics_enabled|default(false) }
     - { role: victoria_logs, tags: victoria_logs, when: victoria_logs_enabled|default(false) }
@@ -111,7 +110,6 @@
   hosts: all
   gather_facts: no
   tags: [ victoria, victoria-agents ]
-  when: vlagent_enabled|default(false)
   roles:
     - { role: vlagent, tags: vlagent, when: vlagent_enabled|default(false) }
 
