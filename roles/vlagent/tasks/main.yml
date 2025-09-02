@@ -54,23 +54,21 @@
 
     # Check if docker group exists for systemd template
     - name: check if docker group exists
-      group:
-        name: docker
-        state: present
-      check_mode: true
+      command: getent group docker
       register: docker_group_check
       ignore_errors: true
+      changed_when: false
 
     - name: set docker group exists fact
       set_fact:
-        vlagent_docker_group_exists: "{{ docker_group_check is not failed }}"
+        vlagent_docker_group_exists: "{{ docker_group_check.rc == 0 }}"
 
     - name: debug docker variables
       debug:
         msg: |
           docker_enabled: {{ docker_enabled|default(false) }}
           vlagent_docker_group_exists: {{ vlagent_docker_group_exists|default(false) }}
-          docker_group_check.failed: {{ docker_group_check.failed|default('undefined') }}
+          docker_group_check.rc: {{ docker_group_check.rc|default('undefined') }}
 
     - name: render vlagent configuration
       template:
