@@ -361,7 +361,7 @@ bootstrap:
         # REPORTING AND LOGGING
         #------------------------------------------------------#
 {% if pg_mode != 'oracle' and pg_mode != 'polar' %}
-        log_destination: csvlog                 # use standard csv log
+        log_destination: {{ pg_log_destination|default('csvlog') }}  # log destination: csvlog, jsonlog, stderr, syslog
 {% endif %}
         logging_collector: 'on'                 # enable csvlog
         log_directory: {{ pg_log_dir }}         # postgres log dir
