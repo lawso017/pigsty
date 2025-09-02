@@ -8,7 +8,9 @@
   block:
     - name: install victoria-logs package
       package:
-        name: victoria-logs
+        name:
+          - victoria-logs
+          - grafana-victorialogs-ds
         state: present
 
     - name: create victorialogs user

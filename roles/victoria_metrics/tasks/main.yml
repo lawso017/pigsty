@@ -6,9 +6,11 @@
   tags: [victoria_metrics, victoria_metrics_install]
   when: victoria_metrics_enabled|bool
   block:
-    - name: install victoria-metrics package
+    - name: install victoria-metrics packages
       package:
-        name: victoria-metrics
+        name:
+          - victoria-metrics
+          - grafana-victoriametrics-ds
         state: present
 
     - name: create victoriametrics user
