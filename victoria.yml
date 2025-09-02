@@ -159,7 +159,7 @@
       notify: restart grafana
       when: 
         - grafana_enabled|default(true)
-        - inventory_hostname == groups['infra'][0]
+        - inventory_hostname in groups['infra']
 
   handlers:
     - name: restart grafana
