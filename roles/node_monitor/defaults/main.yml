@@ -27,7 +27,7 @@ vector_syslog_paths:
   - "/var/log/messages"                  # RHEL/CentOS
 
 # Docker log collection (auto-detected via socket)
-vector_docker_socket: "unix:///var/run/docker.sock"
+vector_docker_socket: "/var/run/docker.sock"
 
 # PostgreSQL log collection (auto-detected for database nodes)
 vector_postgres_log_dir: "{{ pg_log_dir | dirname }}"  # postgresql log directory (reuses pg_log_dir)
