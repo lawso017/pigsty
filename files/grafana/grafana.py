@@ -25,8 +25,8 @@ DEFAULT_DATASOURCES = {
     'ds-meta': {'uid': 'ds-meta', 'orgId': 1, 'name': 'Meta', 'type': 'postgres', 'typeName': 'PostgreSQL', 'access': 'proxy', 'url': '127.0.0.1:5432', 'user': 'dbuser_view', 'database': 'meta', 'basicAuth': False, 'isDefault': False, 'readOnly': True,
      'jsonData': {'connMaxLifetime': 14400, 'maxIdleConns': 10, 'maxOpenConns': 64,  'postgresVersion': 1500, 'sslmode': 'require', 'tlsAuth': False, 'tlsAuthWithCACert': False}, 'secureJsonData': { 'password': METADB_PASSWORD }},
     'ds-loki': {'uid': 'ds-loki', 'orgId': 1, 'name': 'Loki', 'type': 'loki', 'typeName': 'Loki', 'access': 'proxy', 'url': 'http://127.0.0.1:3100', 'basicAuth': False, 'isDefault': False, 'jsonData': {}, 'readOnly': False},
-    'ds-victoriametrics': {'uid': 'ds-victoriametrics', 'orgId': 1, 'name': 'VictoriaMetrics', 'type': 'victoriametrics-metrics-datasource', 'typeName': 'VictoriaMetrics', 'access': 'proxy', 'url': 'http://127.0.0.1:9090', 'basicAuth': False, 'isDefault': False, 'jsonData': {}, 'readOnly': False},
-    'ds-victorialogs': {'uid': 'ds-victorialogs', 'orgId': 1, 'name': 'VictoriaLogs', 'type': 'victoriametrics-logs-datasource', 'typeName': 'VictoriaLogs', 'access': 'proxy', 'url': 'http://127.0.0.1:3100', 'basicAuth': False, 'isDefault': False, 'jsonData': {}, 'readOnly': False}
+    'ds-victoriametrics': {'uid': 'ds-victoriametrics', 'orgId': 1, 'name': 'VictoriaMetrics', 'type': 'victoriametrics-metrics-datasource', 'typeName': 'VictoriaMetrics', 'access': 'proxy', 'url': 'http://127.0.0.1:9091', 'basicAuth': False, 'isDefault': False, 'jsonData': {}, 'readOnly': False},
+    'ds-victorialogs': {'uid': 'ds-victorialogs', 'orgId': 1, 'name': 'VictoriaLogs', 'type': 'victoriametrics-logs-datasource', 'typeName': 'VictoriaLogs', 'access': 'proxy', 'url': 'http://127.0.0.1:3101', 'basicAuth': False, 'isDefault': False, 'jsonData': {}, 'readOnly': False}
 }
 
 
