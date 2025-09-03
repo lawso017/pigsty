@@ -83,6 +83,19 @@
 
 
 #---------------------------------------------------------------
+# init docker
+#---------------------------------------------------------------
+- name: DOCKER INIT
+  become: yes
+  hosts: all
+  gather_facts: no
+  tags: docker
+  roles:
+    - { role: node_id ,tags: id     ,when: docker_enabled is defined and docker_enabled|bool }
+    - { role: docker  ,tags: docker ,when: docker_enabled is defined and docker_enabled|bool }
+
+
+#---------------------------------------------------------------
 # init dns, nginx, prometheus, grafana
 #---------------------------------------------------------------
 - name: INFRA INIT
@@ -94,25 +107,18 @@
 
 
 #---------------------------------------------------------------
-# Victoria Stack (Modern Observability)
+# Victoria (Modern Observability)
 #---------------------------------------------------------------
-- name: VICTORIA STACK
+- name: VICTORIA INIT
   become: yes
   hosts: infra
   gather_facts: no
   tags: [ victoria, victoria-infra ]
   roles:
-    - { role: victoria_metrics, tags: victoria_metrics, when: victoria_metrics_enabled|default(false) }
-    - { role: victoria_logs, tags: victoria_logs, when: victoria_logs_enabled|default(false) }
-    - { role: vmalert, tags: vmalert, alerts, recording_rules }
-
-- name: VICTORIA AGENTS
-  become: yes
-  hosts: all
-  gather_facts: no
-  tags: [ victoria, victoria-agents ]
-  roles:
-    - { role: vlagent, tags: vlagent, when: vlagent_enabled|default(false) }
+    - { role: node_id ,         tags: id               ,when: victoria_metrics_enabled|victoria_logs_enabled|default(false) }
+    - { role: victoria_metrics, tags: victoria_metrics ,when: victoria_metrics_enabled|default(false) }
+    - { role: victoria_logs,    tags: victoria_logs    ,when: victoria_logs_enabled|default(false) }
+    - { role: vmalert,          tags: vmalert          ,when: victoria_metrics_enabled|default(false) }
 
 #---------------------------------------------------------------
 # Node Monitor

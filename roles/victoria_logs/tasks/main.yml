@@ -87,3 +87,17 @@
         port: "{{ victoria_logs_port }}"
         state: started
         timeout: 60
+
+#--------------------------------------------------------------#
+# VictoriaLogs Health Check                      [victoria_logs_check]
+#--------------------------------------------------------------#
+- name: check victorialogs health
+  tags: [victoria_logs, victoria_logs_check]
+  when: victoria_logs_enabled|bool
+  uri:
+    url: "http://{{ inventory_hostname }}:{{ victoria_logs_port }}/health"
+    method: GET
+    status_code: 200
+  register: victorialogs_health_check
+  retries: 3
+  delay: 5
