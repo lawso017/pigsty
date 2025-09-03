@@ -283,7 +283,10 @@ transforms:
         parsed, err = parse_regex(message_str, r'(?P<severity>\w+),\s+\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+--\s+:\s+(?:\[(?P<request_id>[^\]]+)\]\s+)?(?:\((?P<duration>[\d.]+)s\)\s+)?(?P<query>.*)')
         if err == null && parsed != null {
           if exists(parsed.level) {
-            .log_level = downcase(parsed.level)
+            .log_level, downcase_err = downcase(parsed.level)
+            if downcase_err != null {
+              .log_level = parsed.level
+            }
           }
           if exists(parsed.request_id) {
             .request_id = parsed.request_id
