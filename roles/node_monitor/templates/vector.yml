@@ -280,9 +280,11 @@ transforms:
         .version = .label.version
       }
 
-      # Parse Rails application logs specifically
+      # Parse application-specific logs
       message_str = to_string(.message) ?? ""
-      if message_str != "" && match(message_str, r'^\w+,\s+\[.*?\]\s+\w+\s+--\s+:') {
+      
+      # Parse Rails application logs
+      if .container == "fmp-app" && message_str != "" && match(message_str, r'^\w+,\s+\[.*?\]\s+\w+\s+--\s+:') {
         # Rails log format: "I, [2025-09-03T15:01:32.090855 #27]  INFO -- : [request_id] (duration) message"
         parsed, err = parse_regex(message_str, r'(?P<severity>\w+),\s+\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+--\s+:\s+(?:\[(?P<request_id>[^\]]+)\]\s+)?(?:\((?P<duration>[\d.]+)s\)\s+)?(?P<query>.*)')
         if err == null && parsed != null {
@@ -301,6 +303,77 @@ transforms:
           if exists(parsed.query) {
             .query = parsed.query
           }
+          .parsed = true
+        }
+      }
+
+      # Parse Caddy JSON logs (for caddy containers)
+      if .container == "fmp-caddy" && message_str != "" {
+        caddy_json, json_err = parse_json(message_str)
+        if json_err == null && caddy_json != null {
+          # Caddy log level and metadata
+          if exists(caddy_json.level) {
+            .log_level = caddy_json.level
+          }
+          if exists(caddy_json.logger) {
+            .logger = caddy_json.logger
+          }
+          if exists(caddy_json.msg) {
+            .message = caddy_json.msg
+          }
+          
+          # HTTP request details (for access logs)
+          if exists(caddy_json.request) {
+            .http_method = caddy_json.request.method
+            .http_host = caddy_json.request.host
+            .http_uri = caddy_json.request.uri
+            .http_proto = caddy_json.request.proto
+            .client_ip = caddy_json.request.client_ip
+          }
+
+          # HTTP response details
+          if exists(caddy_json.status) {
+            .http_status = caddy_json.status
+          }
+          if exists(caddy_json.duration) {
+            .response_duration_seconds = caddy_json.duration
+          }
+          if exists(caddy_json.size) {
+            .response_size_bytes = caddy_json.size
+          }
+          if exists(caddy_json.bytes_read) {
+            .request_size_bytes = caddy_json.bytes_read
+          }
+          
+          # TLS information
+          if exists(caddy_json.request.tls) {
+            .tls_version = caddy_json.request.tls.version
+            .tls_cipher = caddy_json.request.tls.cipher_suite
+            .tls_proto = caddy_json.request.tls.proto
+            .tls_server_name = caddy_json.request.tls.server_name
+          }
+          
+          # Extract useful headers
+          if exists(caddy_json.request.headers) {
+            if exists(caddy_json.request.headers."Cf-Connecting-Ip") {
+              .cf_connecting_ip = caddy_json.request.headers."Cf-Connecting-Ip"[0]
+            }
+            if exists(caddy_json.request.headers."User-Agent") {
+              .user_agent = caddy_json.request.headers."User-Agent"[0]
+            }
+            if exists(caddy_json.request.headers."Cf-Ray") {
+              .cloudflare_ray = caddy_json.request.headers."Cf-Ray"[0]
+            }
+            if exists(caddy_json.request.headers."Cf-Ipcountry") {
+              .country = caddy_json.request.headers."Cf-Ipcountry"[0]
+            }
+          }
+          
+          # Extract Rails request ID from response headers
+          if exists(caddy_json.resp_headers) && exists(caddy_json.resp_headers."X-Request-Id") {
+            .request_id = caddy_json.resp_headers."X-Request-Id"[0]
+          }
+          
           .parsed = true
         }
       }
