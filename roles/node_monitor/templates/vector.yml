@@ -314,11 +314,18 @@ transforms:
       .ins = "{{ pg_cluster }}-{{ pg_seq }}"
       .ip = "{{ inventory_hostname }}"
 
-      if !exists(.timestamp) {
-        .timestamp = .timestamp || now()
-      }
-      if !exists(.message) {
-        .message = .log || ""
+      # Parse JSON and flatten all fields automatically
+      parsed = parse_json!(.message)
+      . = merge(., parsed)
+
+      # Override the message field for searchability
+      .message = parsed.message || ""
+
+      # Use PostgreSQL's timestamp if available
+      if exists(parsed.timestamp) {
+        .timestamp = parse_timestamp!(parsed.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f %Z")
+      } else {
+        .timestamp = now()
       }
 
 {% if patroni_enabled is defined and patroni_enabled|bool %}
