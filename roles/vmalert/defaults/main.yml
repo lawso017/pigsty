@@ -21,7 +21,3 @@ alertmanager_url: "http://127.0.0.1:{{ alertmanager_port|default(9093) }}" # Ale
 # Rules configuration
 vmalert_rules_dir: /etc/prometheus/rules # directory containing Prometheus rule files
 vmalert_evaluation_interval: 15s        # how often to evaluate rules
-vmalert_external_labels: {}              # external labels to add to alerts
-
-# vmalert service configuration
-vmalert_rule_update_entries_limit: 20000 # max entries for rule updates

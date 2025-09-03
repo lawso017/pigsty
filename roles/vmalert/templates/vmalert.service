@@ -16,9 +16,7 @@ ExecStart=/usr/bin/vmalert \
     -notifier.url={{ alertmanager_url }}{% endif %} \
     -rule={{ vmalert_rules_dir }}/*.yml \
     -evaluationInterval={{ vmalert_evaluation_interval }} \
-    -loggerLevel={{ vmalert_log_level }} \
-    -rule.updateEntriesLimit={{ vmalert_rule_update_entries_limit }}{% if vmalert_external_labels %}{% for key, value in vmalert_external_labels.items() %} \
-    -external.label={{ key }}={{ value }}{% endfor %}{% endif %}
+    -loggerLevel={{ vmalert_log_level }}
 
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
