@@ -5,26 +5,13 @@ After=network.target
 Wants=network-online.target
 
 [Service]
-Type=simple
-User=vector
-Group=vector
-WorkingDirectory={{ vector_data_dir }}
-Environment=VECTOR_LOG={{ vector_log_level }}
+User=root
 ExecStart=/usr/bin/vector --config {{ vector_config_dir }}/vector.yaml
 ExecReload=/bin/kill -HUP $MAINPID
-KillMode=process
+TimeoutSec=60
 Restart=on-failure
 RestartSec=5s
 LimitNOFILE=65536
-
-# Security settings
-NoNewPrivileges=true
-ProtectSystem=strict
-ProtectHome=true
-ReadWritePaths={{ vector_data_dir }} /var/log{% if docker_enabled|default(false) %} /var/lib/docker/containers{% endif %}{% if pg_cluster is defined and pg_seq is defined %} {{ vector_postgres_log_dir }}{% endif %}
-
-PrivateTmp=true
-RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target
