@@ -164,8 +164,8 @@ transforms:
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "vector"
       .src = "vector"
+      .ins = "{{ nodename }}"      
       .ip = "{{ inventory_hostname }}"
-      .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
         .timestamp = now()
@@ -186,8 +186,8 @@ transforms:
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "node"
       .src = "syslog"
+      .ins = "{{ nodename }}"      
       .ip = "{{ inventory_hostname }}"
-      .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
         .timestamp = now()
@@ -204,8 +204,8 @@ transforms:
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "node"
       .src = "dmesg"
+      .ins = "{{ nodename }}"      
       .ip = "{{ inventory_hostname }}"
-      .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
         .timestamp = now()
@@ -222,8 +222,8 @@ transforms:
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "node"
       .src = "cron"
-      .ip = "{{ inventory_hostname }}"
       .ins = "{{ nodename }}"
+      .ip = "{{ inventory_hostname }}"
 
       if !exists(.timestamp) {
         .timestamp = now()
@@ -241,8 +241,8 @@ transforms:
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "docker"
       .src = "docker"
+      .ins = "{{ nodename }}"      
       .ip = "{{ inventory_hostname }}"
-      .ins = "{{ nodename }}"
 
       .container = .container_name
       .image = .image
@@ -268,8 +268,8 @@ transforms:
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "infra"
       .src = "nginx"
-      .ip = "{{ inventory_hostname }}"
       .ins = "{{ nodename }}"
+      .ip = "{{ inventory_hostname }}"
 
       if !exists(.timestamp) {
         .timestamp = now()
@@ -287,8 +287,8 @@ transforms:
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "infra"
       .src = "nginx-error"
+      .ins = "{{ nodename }}"      
       .ip = "{{ inventory_hostname }}"
-      .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
         .timestamp = now()
