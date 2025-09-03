@@ -247,26 +247,45 @@ transforms:
 
       # Container identification (simplified)
       .container = .container_name
-      .image_name = split(.image, ":")[0]
-      .image_tag = split(.image, ":")[1] || "latest"
+      if exists(.image) && is_string(.image) {
+        image_parts = split(.image, ":")
+        .image_name = image_parts[0] || .image
+        .image_tag = image_parts[1] || "latest"
+      }
       
       # Application metadata (only useful labels)
-      .application = .label.app
-      .service = .label.service || .container_name
-      .environment = .label.environment || "unknown"
-      .version = .label.version
+      if exists(.label.app) {
+        .application = .label.app
+      }
+      if exists(.label.service) {
+        .service = .label.service
+      } else {
+        .service = .container_name
+      }
+      if exists(.label.environment) {
+        .environment = .label.environment
+      } else {
+        .environment = "unknown"
+      }
+      if exists(.label.version) {
+        .version = .label.version
+      }
 
       # Parse Rails application logs specifically
-      if match(.message, r'^\w+,\s+\[.*?\]\s+\w+\s+--\s+:') {
+      if is_string(.message) && match(.message, r'^\w+,\s+\[.*?\]\s+\w+\s+--\s+:') {
         # Rails log format: "I, [2025-09-03T15:01:32.090855 #27]  INFO -- : [request_id] (duration) message"
-        parsed = parse_regex(.message, r'(?P<severity>\w+),\s+\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+--\s+:\s+(?:\[(?P<request_id>[^\]]+)\]\s+)?(?:\((?P<duration>[\d.]+)s\)\s+)?(?P<query>.*)')
-        if parsed != null {
+        parsed, err = parse_regex(.message, r'(?P<severity>\w+),\s+\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+--\s+:\s+(?:\[(?P<request_id>[^\]]+)\]\s+)?(?:\((?P<duration>[\d.]+)s\)\s+)?(?P<query>.*)')
+        if err == null && parsed != null {
           .log_level = downcase(parsed.level)
-          .request_id = parsed.request_id
-          if parsed.duration != null {
-            .query_duration_seconds = to_float!(parsed.duration)
+          if exists(parsed.request_id) {
+            .request_id = parsed.request_id
           }
-          .query = parsed.query
+          if exists(parsed.duration) {
+            .query_duration_seconds, duration_err = to_float(parsed.duration)
+          }
+          if exists(parsed.query) {
+            .query = parsed.query
+          }
           .parsed = true
         }
       }
