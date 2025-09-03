@@ -9,40 +9,26 @@ vector_data_dir: /var/lib/vector        # vector data directory
 vector_log_level: info                  # log level: error, warn, info, debug, trace
 
 #--------------------------------------------------------------#
-# VECTOR TARGETS (where to send logs)
-#--------------------------------------------------------------#
-# Send logs directly to VictoriaLogs (recommended)
-vector_victorialogs_enabled: true       # send logs directly to VictoriaLogs?
-
-# Disable vlagent (no longer needed)
-vector_vlagent_enabled: false           # vlagent not needed for direct mode
-
-#--------------------------------------------------------------#
-# LOG COLLECTION SETTINGS
+# LOG COLLECTION SETTINGS (Auto-detected)
 #--------------------------------------------------------------#
 
-# System log collection
-vector_syslog_enabled: true             # collect system logs?
+# System log paths
 vector_syslog_paths:
   - "/var/log/syslog"                    # Ubuntu/Debian
   - "/var/log/messages"                  # RHEL/CentOS
 
-# Docker log collection
-vector_docker_enabled: true             # collect docker container logs?
+# Docker log collection (auto-detected via socket)
 vector_docker_socket: "unix:///var/run/docker.sock"
 
-# PostgreSQL log collection (for database nodes) - JSON format logs
-vector_postgres_enabled: false          # collect postgresql logs? (set per node)
+# PostgreSQL log collection (auto-detected for database nodes)
 vector_postgres_log_dir: "/pg/log"      # postgresql log directory
 vector_postgres_log_pattern: "postgres/*.json"  # PostgreSQL JSON logs
 
-# Nginx log collection (for infra nodes)
-vector_nginx_enabled: false             # collect nginx logs? (set per node)
+# Nginx log collection (auto-detected for infra nodes)
 vector_nginx_access_logs: "/var/log/nginx/access.log"
 vector_nginx_error_logs: "/var/log/nginx/error.log"
 
-# Redis log collection (for redis nodes)
-vector_redis_enabled: false             # collect redis logs? (set per node)  
+# Redis log collection (auto-detected for redis nodes)
 vector_redis_log_dir: "/var/log/redis"
 vector_redis_log_pattern: "*.log"
 

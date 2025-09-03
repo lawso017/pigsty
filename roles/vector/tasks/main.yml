@@ -66,23 +66,11 @@
   tags: [vector, vector_config]
   when: vector_enabled|bool
   block:
-    # Set postgres log collection based on node type
-    - name: set postgres log collection for database nodes
-      set_fact:
-        vector_postgres_enabled: true
-      when: "'pg-' in group_names"
-
-    # Set nginx log collection for infra nodes
-    - name: set nginx log collection for infra nodes
-      set_fact:
-        vector_nginx_enabled: true
-      when: "inventory_hostname in groups['infra']|default([])"
-
-    # Set redis log collection for redis nodes
-    - name: set redis log collection for redis nodes
-      set_fact:
-        vector_redis_enabled: true
-      when: "redis_cluster is defined and redis_node is defined"
+    # Check if Docker socket exists (for auto-detection)
+    - name: check if docker socket exists
+      stat:
+        path: "{{ vector_docker_socket }}"
+      register: docker_socket_stat
 
     - name: render vector configuration
       template:

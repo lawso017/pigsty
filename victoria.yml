@@ -56,8 +56,7 @@
         msg: |
           Vector deployed on: {{ inventory_hostname }}:{{ vector_port }}
           Target: VictoriaLogs direct (HA to all infra nodes)
-          Docker logging: {{ vector_docker_enabled }}
-          PostgreSQL logging: {{ vector_postgres_enabled|default(false) }}
+          Auto-detected services: Docker={{ docker_socket_stat.stat.exists|default(false) }} | PostgreSQL={{ (pg_cluster is defined and pg_seq is defined)|default(false) }} | Nginx={{ (inventory_hostname in groups["infra"]|default([]))|default(false) }}
 
 
 #----------------------------------------------#
