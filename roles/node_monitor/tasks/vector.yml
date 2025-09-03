@@ -1,10 +1,93 @@
 ---
 #--------------------------------------------------------------#
-# Install vector                                [vector_install]
+# Install Vector                                 [vector_install]
 #--------------------------------------------------------------#
 - name: install vector
-  tags: [vector, vector_install ]
+  tags: [vector, vector_install]
   block:
-    - name: install vector systemd service
+    - name: install vector package
       package: name=vector state=present
-...
+    
+    - name: create vector user
+      user:
+        name: vector
+        system: true
+        shell: /bin/false
+        home: "{{ vector_data_dir }}"
+        create_home: false
+
+    - name: add vector to docker group (if docker enabled)
+      user:
+        name: vector
+        groups: docker
+        append: true
+      when: docker_enabled|default(false)
+      ignore_errors: true
+
+    - name: add vector to postgres group (for PostgreSQL log access)
+      user:
+        name: vector
+        groups: postgres
+        append: true
+      when: "'pg-' in group_names"
+      ignore_errors: true
+
+    - name: add vector to adm group (for system and nginx log access)
+      user:
+        name: vector
+        groups: adm
+        append: true
+      ignore_errors: true
+
+    - name: create vector directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: vector
+        group: vector
+        mode: '0755'
+      loop:
+        - "{{ vector_config_dir }}"
+        - "{{ vector_data_dir }}"
+        - /var/log/vector
+
+#--------------------------------------------------------------#
+# Config Vector                                  [vector_config]
+#--------------------------------------------------------------#
+- name: config vector
+  tags: [vector, vector_config]
+  block:
+    - name: create /etc/vector config dir
+      file: dest=/etc/vector state=directory owner=vector group=vector
+
+    - name: check if docker socket exists (auto-detection)
+      stat:
+        path: "{{ vector_docker_socket }}"
+      register: docker_socket_stat
+
+    - name: render /etc/vector/vector.yaml config
+      template: 
+        src: vector.yaml 
+        dest: /etc/vector/vector.yaml
+        owner: vector
+        group: vector
+        mode: '0644'
+
+    - name: create vector systemd service
+      template: 
+        src: vector.service 
+        dest: /etc/systemd/system/vector.service
+        mode: '0644'
+
+#--------------------------------------------------------------#
+# Launch Vector                                  [vector_launch]
+#--------------------------------------------------------------#
+- name: launch vector
+  tags: [vector, vector_launch]
+  when: vector_enabled|bool
+  block:
+    - name: restart vector systemd service
+      systemd: name=vector state=restarted enabled=yes daemon_reload=yes
+    
+    - name: wait for vector service online
+      wait_for: host=127.0.0.1 port={{ vector_port }} state=started timeout=20

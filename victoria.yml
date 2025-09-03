@@ -36,28 +36,6 @@
           vmalert deployed on: {{ inventory_hostname }}:{{ vmalert_port }}
           Health checks: VM {{ vm_health_check.status|default('unknown') }} | vmalert {{ vmalert_health_check.status|default('unknown') }}
 
-#----------------------------------------------#  
-# Deploy Vector for log collection on all nodes
-#----------------------------------------------#
-- name: Deploy Vector Log Collection
-  hosts: all
-  become: true
-  gather_facts: true
-  any_errors_fatal: true
-  tags: [victoria, vector, logs]
-
-  roles:
-    - role: vector
-      tags: [vector]
-
-  post_tasks:
-    - name: Vector deployment summary
-      debug:
-        msg: |
-          Vector deployed on: {{ inventory_hostname }}:{{ vector_port }}
-          Target: VictoriaLogs direct (HA to all infra nodes)
-          Auto-detected services: Docker={{ docker_socket_stat.stat.exists|default(false) }} | PostgreSQL={{ (pg_cluster is defined and pg_seq is defined)|default(false) }} | Nginx={{ (inventory_hostname in groups["infra"]|default([]))|default(false) }}
-
 
 #----------------------------------------------#
 # Update Grafana data sources (if grafana enabled)
@@ -215,7 +193,7 @@
           
           📊 Next Steps:
           1. Check Grafana data sources are updated
-          2. Verify Vector is collecting logs from files and Docker
+          2. Deploy Vector via node_monitor role on target nodes
           3. Verify logs are arriving in VictoriaLogs directly
           4. Test queries in Grafana explore
           5. Monitor resource usage vs old stack (should be more efficient!)

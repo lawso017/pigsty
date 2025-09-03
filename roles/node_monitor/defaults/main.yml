@@ -12,6 +12,48 @@ promtail_enabled: true            # enable promtail logging collector? (deprecat
 promtail_clean: false             # purge the existing promtail status file during init?
 promtail_port: 9080               # promtail listen port, 9080 by default
 promtail_positions: /var/log/positions.yaml # promtail position status file path
+#--------------------------------------------------------------#
+# VECTOR (Log Collection Agent)
+#--------------------------------------------------------------#
+vector_enabled: true                    # enable vector on this node?
+vector_port: 8686                       # vector API port
+vector_config_dir: /etc/vector          # vector configuration directory
+vector_data_dir: /var/lib/vector        # vector data directory
+vector_log_level: info                  # log level: error, warn, info, debug, trace
+
+# System log paths
+vector_syslog_paths:
+  - "/var/log/syslog"                    # Ubuntu/Debian
+  - "/var/log/messages"                  # RHEL/CentOS
+
+# Docker log collection (auto-detected via socket)
+vector_docker_socket: "unix:///var/run/docker.sock"
+
+# PostgreSQL log collection (auto-detected for database nodes)
+vector_postgres_log_dir: "{{ pg_log_dir | dirname }}"  # postgresql log directory (reuses pg_log_dir)
+vector_postgres_log_pattern: "postgres/*.json"  # PostgreSQL JSON logs
+
+# Nginx log collection (auto-detected for infra nodes)
+vector_nginx_access_logs: "/var/log/nginx/access.log"
+vector_nginx_error_logs: "/var/log/nginx/error.log"
+
+# Redis log collection (auto-detected for redis nodes)
+vector_redis_log_dir: "/var/log/redis"
+vector_redis_log_pattern: "*.log"
+
+# VECTOR PERFORMANCE SETTINGS  
+vector_buffer_max_events: 10000         # max events in memory buffer
+vector_buffer_when_full: "block"        # what to do when buffer full: block, drop_newest
+vector_batch_max_events: 1000           # max events per batch
+vector_batch_timeout_ms: 5000           # batch timeout in milliseconds
+vector_compression: "gzip"              # compression: none, gzip, lz4, snappy
+vector_healthcheck_enabled: false       # enable health checks (can cause issues)
+
+# STREAM FIELDS (for VictoriaLogs)
+# Fields used for log stream identification in VictoriaLogs
+vector_stream_fields: "host,job,src"    # comma-separated stream fields
+vector_msg_field: "message"             # field containing log message
+vector_time_field: "timestamp"          # field containing timestamp
 #-----------------------------------------------------------------
 # NODE_VIP (Reference)
 #-----------------------------------------------------------------
