@@ -161,10 +161,10 @@ transforms:
     inputs:
       - vector_logs
     source: |
+      .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "vector"
       .src = "vector"
       .ip = "{{ inventory_hostname }}"
-      .cls = "{{ node_cluster|default('nodes') }}"
       .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
@@ -183,10 +183,10 @@ transforms:
     inputs:
       - syslog
     source: |
+      .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "node"
       .src = "syslog"
       .ip = "{{ inventory_hostname }}"
-      .cls = "{{ node_cluster|default('nodes') }}"
       .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
@@ -201,10 +201,10 @@ transforms:
     inputs:
       - dmesg
     source: |
+      .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "node"
       .src = "dmesg"
       .ip = "{{ inventory_hostname }}"
-      .cls = "{{ node_cluster|default('nodes') }}"
       .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
@@ -219,10 +219,10 @@ transforms:
     inputs:
       - cron
     source: |
+      .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "node"
       .src = "cron"
       .ip = "{{ inventory_hostname }}"
-      .cls = "{{ node_cluster|default('nodes') }}"
       .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
@@ -238,10 +238,10 @@ transforms:
     inputs:
       - docker
     source: |
+      .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "docker"
       .src = "docker"
       .ip = "{{ inventory_hostname }}"
-      .cls = "{{ node_cluster|default('nodes') }}"
       .ins = "{{ nodename }}"
 
       .container = .container_name
@@ -265,10 +265,10 @@ transforms:
     inputs:
       - nginx_access
     source: |
+      .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "infra"
       .src = "nginx"
       .ip = "{{ inventory_hostname }}"
-      .cls = "{{ node_cluster|default('nodes') }}"
       .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
@@ -284,10 +284,10 @@ transforms:
     inputs:
       - nginx_error
     source: |
+      .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "infra"
       .src = "nginx-error"
       .ip = "{{ inventory_hostname }}"
-      .cls = "{{ node_cluster|default('nodes') }}"
       .ins = "{{ nodename }}"
 
       if !exists(.timestamp) {
@@ -308,9 +308,9 @@ transforms:
     inputs:
       - postgres
     source: |
+      .cls = "{{ pg_cluster }}" 
       .job = "pgsql"
       .src = "postgres"
-      .cls = "{{ pg_cluster }}"
       .ins = "{{ pg_cluster }}-{{ pg_seq }}"
       .ip = "{{ inventory_hostname }}"
 
@@ -328,9 +328,9 @@ transforms:
     inputs:
       - patroni
     source: |
+      .cls = "{{ pg_cluster }}"    
       .job = "pgsql"
       .src = "patroni"
-      .cls = "{{ pg_cluster }}"
       .ins = "{{ pg_cluster }}-{{ pg_seq }}"
       .ip = "{{ inventory_hostname }}"
 
@@ -349,9 +349,9 @@ transforms:
     inputs:
       - pgbackrest
     source: |
+      .cls = "{{ pg_cluster }}"    
       .job = "pgsql"
       .src = "pgbackrest"
-      .cls = "{{ pg_cluster }}"
       .ins = "{{ pg_cluster }}-{{ pg_seq }}"
       .ip = "{{ inventory_hostname }}"
 
@@ -370,9 +370,9 @@ transforms:
     inputs:
       - pgbouncer
     source: |
+      .cls = "{{ pg_cluster }}"    
       .job = "pgsql"
       .src = "pgbouncer"
-      .cls = "{{ pg_cluster }}"
       .ins = "{{ pg_cluster }}-{{ pg_seq }}"
       .ip = "{{ inventory_hostname }}"
 
@@ -395,9 +395,9 @@ transforms:
     inputs:
       - redis
     source: |
+      .cls = "{{ redis_cluster }}"    
       .job = "redis"
       .src = "redis"
-      .cls = "{{ redis_cluster }}"
       .ins = "{{ redis_cluster }}-{{ redis_node }}"
       .ip = "{{ inventory_hostname }}"
 
