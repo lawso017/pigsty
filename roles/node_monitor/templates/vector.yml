@@ -241,7 +241,11 @@ transforms:
       # Essential stream identification
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "docker"
-      .src = "docker"
+      if exists(.label.src) {
+        .src = .label.src
+      } else {
+        .src = "docker"
+      }
       .ins = "{{ nodename }}"      
       .ip = "{{ inventory_hostname }}"
 
