@@ -315,16 +315,22 @@ transforms:
       .ip = "{{ inventory_hostname }}"
 
       # Parse JSON and flatten all fields automatically
-      parsed = parse_json!(.message)
-      . = merge(., parsed)
+      parsed, err = parse_json(.message)
+      if err == null {
+        . = merge!(., parsed)
 
-      # Override the message field for searchability
-      .message = parsed.message || ""
+        # Override the message field for searchability
+        .message = parsed.message || ""
 
-      # Use PostgreSQL's timestamp if available
-      if exists(parsed.timestamp) {
-        .timestamp = parse_timestamp!(parsed.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f %Z")
+        # Use PostgreSQL's timestamp if available
+        if exists(parsed.timestamp) {
+          .timestamp = parse_timestamp!(parsed.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f %Z")
+        } else {
+          .timestamp = now()
+        }
       } else {
+        # If JSON parsing fails, keep original message
+        .message = .message || ""
         .timestamp = now()
       }
 
