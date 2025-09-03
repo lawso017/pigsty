@@ -248,9 +248,14 @@ transforms:
       # Container identification (simplified)
       .container = .container_name
       if exists(.image) && is_string(.image) {
-        image_parts = split(.image, ":")
-        .image_name = image_parts[0] || .image
-        .image_tag = image_parts[1] || "latest"
+        image_parts, split_err = split(.image, ":")
+        if split_err == null {
+          .image_name = image_parts[0] || .image
+          .image_tag = image_parts[1] || "latest"
+        } else {
+          .image_name = .image
+          .image_tag = "latest"
+        }
       }
       
       # Application metadata (only useful labels)
@@ -272,11 +277,14 @@ transforms:
       }
 
       # Parse Rails application logs specifically
-      if is_string(.message) && match(.message, r'^\w+,\s+\[.*?\]\s+\w+\s+--\s+:') {
+      message_str = to_string(.message) ?? ""
+      if message_str != "" && match(message_str, r'^\w+,\s+\[.*?\]\s+\w+\s+--\s+:') {
         # Rails log format: "I, [2025-09-03T15:01:32.090855 #27]  INFO -- : [request_id] (duration) message"
-        parsed, err = parse_regex(.message, r'(?P<severity>\w+),\s+\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+--\s+:\s+(?:\[(?P<request_id>[^\]]+)\]\s+)?(?:\((?P<duration>[\d.]+)s\)\s+)?(?P<query>.*)')
+        parsed, err = parse_regex(message_str, r'(?P<severity>\w+),\s+\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+--\s+:\s+(?:\[(?P<request_id>[^\]]+)\]\s+)?(?:\((?P<duration>[\d.]+)s\)\s+)?(?P<query>.*)')
         if err == null && parsed != null {
-          .log_level = downcase(parsed.level)
+          if exists(parsed.level) {
+            .log_level = downcase(parsed.level)
+          }
           if exists(parsed.request_id) {
             .request_id = parsed.request_id
           }
