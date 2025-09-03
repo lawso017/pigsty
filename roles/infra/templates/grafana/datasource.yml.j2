@@ -12,10 +12,12 @@ apiVersion: 1
 
 # remove provisioned data sources
 deleteDatasources:
-  - { name: Prometheus , orgId: 1 }
-  - { name: Meta       , orgId: 1 }
-  - { name: Loki       , orgId: 1 }
-  - { name: Static     , orgId: 1 }
+  - { name: Prometheus      , orgId: 1 }
+  - { name: Meta            , orgId: 1 }
+  - { name: Loki            , orgId: 1 }
+  - { name: Static          , orgId: 1 }
+  - { name: VictoriaMetrics , orgID: 1 }
+  - { name: VictoriaLogs    , orgID: 1 }
 
 # install following data sources
 datasources:
@@ -72,4 +74,18 @@ datasources:
     uid: ds-static
     editable: true
 
-...
+  # VictoriaMetrics Next-Gen Monitoring
+  - name: VictoriaMetrics
+    type: victoriametrics-metrics-datasource
+    uid: ds-victoriametrics
+    url: http://127.0.0.1:9090
+    access: proxy
+    editable: true
+  
+  # VictoriaLogs Next-Gen Logging
+  - name: VictoriaLogs
+    type: victoriametrics-logs-datasource
+    uid: ds-victorialogs
+    url: http://127.0.0.1:3100
+    access: proxy
+    editable: true
