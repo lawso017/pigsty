@@ -308,28 +308,40 @@ transforms:
     inputs:
       - postgres
     source: |
-      .cls = "{{ pg_cluster }}" 
-      .job = "pgsql"
-      .src = "postgres"
-      .ins = "{{ pg_cluster }}-{{ pg_seq }}"
-      .ip = "{{ inventory_hostname }}"
-
-      # Parse JSON and flatten all fields automatically
+      # Parse JSON first
       parsed, err = parse_json(.message)
       if err == null {
+        # Merge parsed JSON fields
         . = merge!(., parsed)
 
-        # Override the message field for searchability
+        # Set stream identification fields after successful parse
+        .cls = "{{ pg_cluster }}" 
+        .job = "pgsql"
+        .src = "postgres"
+        .ins = "{{ pg_cluster }}-{{ pg_seq }}"
+        .ip = "{{ inventory_hostname }}"
+
+        # Set the message field for searchability
         .message = parsed.message || ""
 
         # Use PostgreSQL's timestamp if available
         if exists(parsed.timestamp) {
-          .timestamp = parse_timestamp!(parsed.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f %Z")
+          ts, ts_err = parse_timestamp(parsed.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f %Z")
+          if ts_err == null {
+            .timestamp = ts
+          } else {
+            .timestamp = now()
+          }
         } else {
           .timestamp = now()
         }
       } else {
-        # If JSON parsing fails, keep original message
+        # If JSON parsing fails, set basic fields
+        .cls = "{{ pg_cluster }}" 
+        .job = "pgsql"
+        .src = "postgres"
+        .ins = "{{ pg_cluster }}-{{ pg_seq }}"
+        .ip = "{{ inventory_hostname }}"
         .message = .message || ""
         .timestamp = now()
       }
