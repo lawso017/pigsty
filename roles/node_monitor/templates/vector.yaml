@@ -112,6 +112,8 @@ sources:
     include:
       - "{{ pgbackrest_log_dir }}/*.log"
     read_from: beginning
+    fingerprint:
+      lines: 2
 {% endif %}
 
 {% if pgbouncer_enabled is defined and pgbouncer_enabled|bool %}
