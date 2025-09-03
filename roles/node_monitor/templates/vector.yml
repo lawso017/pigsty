@@ -238,15 +238,47 @@ transforms:
     inputs:
       - docker
     source: |
+      # Essential stream identification
       .cls = "{{ node_cluster|default('nodes') }}"    
       .job = "docker"
       .src = "docker"
       .ins = "{{ nodename }}"      
       .ip = "{{ inventory_hostname }}"
 
+      # Container identification (simplified)
       .container = .container_name
-      .image = .image
+      .image_name = split(.image, ":")[0]
+      .image_tag = split(.image, ":")[1] || "latest"
+      
+      # Application metadata (only useful labels)
+      .application = .label.app
+      .service = .label.service || .container_name
+      .environment = .label.environment || "unknown"
+      .version = .label.version
 
+      # Parse Rails application logs specifically
+      if match(.message, r'^\w+,\s+\[.*?\]\s+\w+\s+--\s+:') {
+        # Rails log format: "I, [2025-09-03T15:01:32.090855 #27]  INFO -- : [request_id] (duration) message"
+        parsed = parse_regex(.message, r'(?P<severity>\w+),\s+\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+--\s+:\s+(?:\[(?P<request_id>[^\]]+)\]\s+)?(?:\((?P<duration>[\d.]+)s\)\s+)?(?P<query>.*)')
+        if parsed != null {
+          .log_level = downcase(parsed.level)
+          .request_id = parsed.request_id
+          if parsed.duration != null {
+            .query_duration_seconds = to_float!(parsed.duration)
+          }
+          .query = parsed.query
+          .parsed = true
+        }
+      }
+
+      # Clean up - remove noisy fields
+      del(.label)
+      del(.container_id)
+      del(.container_created_at)
+      del(.source_type)
+      del(.image)
+
+      # Ensure required fields exist
       if !exists(.timestamp) {
         .timestamp = .created_at || now()
       }
