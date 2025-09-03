@@ -23,6 +23,9 @@ sources:
   vector_metrics:
     type: internal_metrics
 
+  vector_logs:
+    type: internal_logs
+
   host_metrics:
     type: host_metrics
 
@@ -148,13 +151,31 @@ transforms:
       - vector_metrics
       - host_metrics
     source: |
-      # Add job label for dashboard filtering
       .tags.job = "vector"
-      # Add PID label using environment variable (set by systemd)
-      .tags.pid = get_env_var("MAINPID") ?? "unknown"
-      # Add additional identifying labels
-      .tags.service = "vector-agent"
-      .tags.node = "{{ nodename }}"
+      .tags.nodename = "{{ nodename }}"
+      .tags.instance = "{{ inventory_hostname }}:{{ vector_port }}"
+
+  ################################################################
+  #                     Vector Logs Enrichment                  #
+  ################################################################
+  # Parse and enrich Vector internal logs
+  vector_logs_parsed:
+    type: remap
+    inputs:
+      - vector_logs
+    source: |
+      .job = "vector"
+      .src = "vector"
+      .ip = "{{ inventory_hostname }}"
+      .cls = "{{ node_cluster|default('nodes') }}"
+      .ins = "{{ nodename }}"
+
+      if !exists(.timestamp) {
+        .timestamp = now()
+      }
+      if !exists(.message) {
+        .message = ""
+      }
 
   ################################################################
   #                        Node Transforms                      #
@@ -404,10 +425,10 @@ sinks:
   victorialogs_{{ loop.index }}:
     type: http
     inputs:
-      # Node logs (always included)
       - syslog_parsed
       - dmesg_parsed
       - cron_parsed
+      - vector_logs_parsed
 {% if docker_socket_stat.stat.exists %}
       # Docker logs (if Docker available)
       - docker_parsed
