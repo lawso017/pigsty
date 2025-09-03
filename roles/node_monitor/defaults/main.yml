@@ -51,7 +51,7 @@ vector_healthcheck_enabled: false       # enable health checks (can cause issues
 
 # STREAM FIELDS (for VictoriaLogs)
 # Fields used for log stream identification in VictoriaLogs
-vector_stream_fields: "host,job,src,cls,ins,ip"    # comma-separated stream fields
+vector_stream_fields: "host,job,src"    # comma-separated stream fields
 vector_msg_field: "message"                        # field containing log message
 vector_time_field: "timestamp"                     # field containing timestamp
 #-----------------------------------------------------------------

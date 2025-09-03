@@ -61,11 +61,10 @@ sources:
     docker_host: "{{ vector_docker_socket }}"
 {% endif %}
 
-{% if inventory_hostname in groups["infra"]|default([]) %}
+{% if inventory_hostname in groups['infra']|default([]) and (nginx_enabled is not defined or nginx_enabled|bool) %}
   ################################################################
   #                       Infra Logs                            #
   ################################################################
-{% if inventory_hostname in groups['infra']|default([]) and (nginx_enabled is not defined or nginx_enabled|bool) %}
   # Nginx access logs
   nginx_access:
     type: file
@@ -79,7 +78,6 @@ sources:
     include:
       - "/var/log/nginx-error.log"
     read_from: beginning
-{% endif %}
 {% endif %}
 
 {% if pg_cluster is defined and pg_seq is defined %}
