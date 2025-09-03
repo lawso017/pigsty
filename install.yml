@@ -115,7 +115,7 @@
   gather_facts: no
   tags: [ victoria, victoria-infra ]
   roles:
-    - { role: node_id ,         tags: id               ,when: victoria_metrics_enabled|victoria_logs_enabled|default(false) }
+    - { role: node_id ,         tags: id               ,when: victoria_metrics_enabled|default(false) or victoria_logs_enabled|default(false) }
     - { role: victoria_metrics, tags: victoria_metrics ,when: victoria_metrics_enabled|default(false) }
     - { role: victoria_logs,    tags: victoria_logs    ,when: victoria_logs_enabled|default(false) }
     - { role: vmalert,          tags: vmalert          ,when: victoria_metrics_enabled|default(false) }
