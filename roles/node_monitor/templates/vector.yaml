@@ -149,7 +149,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 
   # Parse and enrich dmesg
@@ -168,7 +168,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 
   # Parse and enrich cron logs
@@ -187,7 +187,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 
 {% if docker_socket_stat.stat.exists %}
@@ -210,7 +210,7 @@ transforms:
         .timestamp = .created_at || now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 {% endif %}
 
@@ -234,7 +234,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 
   # Parse and enrich Nginx error logs
@@ -253,7 +253,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 {% endif %}
 
@@ -277,7 +277,7 @@ transforms:
         .timestamp = .timestamp || now()
       }
       if !exists(.message) {
-        .message = .message || .log || ""
+        .message = .log || ""
       }
 
 {% if patroni_enabled is defined and patroni_enabled|bool %}
@@ -297,7 +297,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 {% endif %}
 
@@ -318,7 +318,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 {% endif %}
 
@@ -339,7 +339,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 {% endif %}
 {% endif %}
@@ -364,7 +364,7 @@ transforms:
         .timestamp = now()
       }
       if !exists(.message) {
-        .message = string(.message) || ""
+        .message = ""
       }
 {% endif %}
 
