@@ -19,6 +19,12 @@ api:
 
 sources:
   ################################################################
+  #                        Vector Metrics                        #
+  ################################################################
+    vector_metrics:
+      type: internal_metrics
+
+  ################################################################
   #                        Node Logs                            #
   ################################################################
   # System logs (equivalent to Promtail nodes job)
@@ -443,3 +449,11 @@ sinks:
       timeout_ms: {{ vector_batch_timeout_ms }}
 
 {% endfor %}
+
+  # Expose Vector metrics for Prometheus scraping
+  vector_metrics_http:
+    type: prometheus_exporter
+    inputs:
+      - vector_metrics
+    address: "0.0.0.0:{{ vector_port }}"
+    default_namespace: vector
