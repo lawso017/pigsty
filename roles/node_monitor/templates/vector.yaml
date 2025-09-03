@@ -8,10 +8,9 @@
 # Global settings
 data_dir: "{{ vector_data_dir }}"
 
-# API configuration
+# API disabled - using only Prometheus metrics exporter
 api:
-  enabled: true
-  address: "127.0.0.1:{{ vector_port }}"
+  enabled: false
 
 ################################################################
 #                        SOURCES                              #
