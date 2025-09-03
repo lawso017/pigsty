@@ -198,7 +198,6 @@ transforms:
         .message = ""
       }
 
-  # Parse and enrich dmesg
   dmesg_parsed:
     type: remap
     inputs:
@@ -217,7 +216,6 @@ transforms:
         .message = ""
       }
 
-  # Parse and enrich cron logs
   cron_parsed:
     type: remap
     inputs:
@@ -237,7 +235,6 @@ transforms:
       }
 
 {% if docker_socket_stat.stat.exists %}
-  # Parse and enrich Docker logs
   docker_parsed:
     type: remap
     inputs:
@@ -429,16 +426,13 @@ sinks:
       - cron_parsed
       - vector_logs_parsed
 {% if docker_socket_stat.stat.exists %}
-      # Docker logs (if Docker available)
       - docker_parsed
 {% endif %}
 {% if inventory_hostname in groups["infra"]|default([]) and (nginx_enabled is not defined or nginx_enabled|bool) %}
-      # Infra logs (if on infra node and nginx enabled)
       - nginx_access_parsed
       - nginx_error_parsed
 {% endif %}
 {% if pg_cluster is defined and pg_seq is defined %}
-      # PostgreSQL logs (if on database node)
       - postgres_parsed
 {% if patroni_enabled is defined and patroni_enabled|bool %}
       - patroni_parsed
@@ -451,7 +445,6 @@ sinks:
 {% endif %}
 {% endif %}
 {% if redis_cluster is defined and redis_node is defined %}
-      # Redis logs (if on redis node)
       - redis_parsed
 {% endif %}
 
