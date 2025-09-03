@@ -26,9 +26,6 @@ sources:
   vector_logs:
     type: internal_logs
 
-  host_metrics:
-    type: host_metrics
-
   ################################################################
   #                        Node Logs                            #
   ################################################################
@@ -152,7 +149,6 @@ transforms:
     type: remap
     inputs:
       - vector_metrics
-      - host_metrics
     source: |
       .tags.job = "vector"
       .tags.nodename = "{{ nodename }}"
