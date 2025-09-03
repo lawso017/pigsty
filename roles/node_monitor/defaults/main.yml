@@ -90,4 +90,5 @@ pgbackrest_log_dir: /pg/log/pgbackrest # pgbackrest log dir, `/pg/log/pgbackrest
 # INFRA (Reference)
 #-----------------------------------------------------------------
 infra_portal: {loki : {endpoint: "${admin_ip}:3100"}}
+victoria_logs_port: 3100          # VictoriaLogs port for Vector sink endpoints
 ...

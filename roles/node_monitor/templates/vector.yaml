@@ -410,7 +410,7 @@ sinks:
 {% endif %}
 
     # VictoriaLogs endpoint
-    uri: "http://{{ infra_host }}:9428/insert/jsonline"
+    uri: "http://{{ infra_host }}:{{ victoria_logs_port|default(3100) }}/insert/jsonline"
 
     # Headers for VictoriaLogs (matching Promtail external_labels)
     request:
