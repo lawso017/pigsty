@@ -139,6 +139,24 @@ sources:
 
 transforms:
   ################################################################
+  #                     Vector Metrics Enrichment               #
+  ################################################################
+  # Add missing labels to vector metrics for dashboard compatibility
+  vector_metrics_enriched:
+    type: remap
+    inputs:
+      - vector_metrics
+      - host_metrics
+    source: |
+      # Add job label for dashboard filtering
+      .tags.job = "vector"
+      # Add PID label (dashboard requirement)
+      .tags.pid = to_string(get_pid())
+      # Add additional identifying labels
+      .tags.service = "vector-agent"
+      .tags.node = "{{ nodename }}"
+
+  ################################################################
   #                        Node Transforms                      #
   ################################################################
   # Parse and enrich syslog (equivalent to Promtail nodes job)
@@ -456,11 +474,6 @@ sinks:
   vector_metrics_http:
     type: prometheus_exporter
     inputs:
-      - vector_metrics
-      - host_metrics
+      - vector_metrics_enriched
     address: "0.0.0.0:{{ vector_port }}"
     default_namespace: vector
-    # Add missing labels for dashboard compatibility
-    default_labels:
-      job: "vector"
-      instance_type: "vector-agent"
