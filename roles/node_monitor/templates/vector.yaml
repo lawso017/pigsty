@@ -23,6 +23,9 @@ sources:
   vector_metrics:
     type: internal_metrics
 
+  host_metrics:
+    type: host_metrics
+
   ################################################################
   #                        Node Logs                            #
   ################################################################
@@ -454,5 +457,10 @@ sinks:
     type: prometheus_exporter
     inputs:
       - vector_metrics
+      - host_metrics
     address: "0.0.0.0:{{ vector_port }}"
     default_namespace: vector
+    # Add missing labels for dashboard compatibility
+    default_labels:
+      job: "vector"
+      instance_type: "vector-agent"
