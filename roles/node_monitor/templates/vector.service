@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 User=root
-ExecStart=/usr/bin/vector --config {{ vector_config_dir }}/vector.yaml
+ExecStart=/usr/bin/vector --config {{ vector_config_dir }}/vector.yml
 ExecReload=/bin/kill -HUP $MAINPID
 TimeoutSec=60
 Restart=on-failure

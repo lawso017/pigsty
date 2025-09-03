@@ -7,49 +7,10 @@
   block:
     - name: install vector package
       package: name=vector state=present
-    
-    - name: create vector user
-      user:
-        name: vector
-        system: true
-        shell: /bin/false
-        home: "{{ vector_data_dir }}"
-        create_home: false
-
-    - name: add vector to docker group (if docker enabled)
-      user:
-        name: vector
-        groups: docker
-        append: true
-      when: docker_enabled|default(false)
-      ignore_errors: true
-
-    - name: add vector to postgres group (for PostgreSQL log access)
-      user:
-        name: vector
-        groups: postgres
-        append: true
-      when: "'pg-' in group_names"
-      ignore_errors: true
-
-    - name: add vector to adm group (for system and nginx log access)
-      user:
-        name: vector
-        groups: adm
-        append: true
-      ignore_errors: true
-
-    - name: create vector directories
-      file:
-        path: "{{ item }}"
-        state: directory
-        owner: vector
-        group: vector
-        mode: '0755'
-      loop:
-        - "{{ vector_config_dir }}"
-        - "{{ vector_data_dir }}"
-        - /var/log/vector
+    - name: create vector systemd service
+      template: 
+        src: vector.service 
+        dest: "{{ systemd_dir }}/vector.service"
 
 #--------------------------------------------------------------#
 # Config Vector                                  [vector_config]
@@ -57,27 +18,24 @@
 - name: config vector
   tags: [vector, vector_config]
   block:
-    - name: create /etc/vector config dir
-      file: dest=/etc/vector state=directory owner=vector group=vector
+    - name: create vector directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ vector_config_dir }}"
+        - "{{ vector_data_dir }}"
+        - /var/log/vector
 
     - name: check if docker socket exists (auto-detection)
       stat:
         path: "{{ vector_docker_socket }}"
       register: docker_socket_stat
 
-    - name: render /etc/vector/vector.yaml config
+    - name: render /etc/vector/vector.yml config
       template: 
-        src: vector.yaml 
-        dest: /etc/vector/vector.yaml
-        owner: vector
-        group: vector
-        mode: '0644'
-
-    - name: create vector systemd service
-      template: 
-        src: vector.service 
-        dest: /etc/systemd/system/vector.service
-        mode: '0644'
+        src: vector.yml 
+        dest: /etc/vector/vector.yml
 
 #--------------------------------------------------------------#
 # Launch Vector                                  [vector_launch]
