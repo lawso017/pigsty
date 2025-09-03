@@ -11,6 +11,7 @@
       template: 
         src: vector.service 
         dest: "{{ systemd_dir }}/vector.service"
+        force: yes
 
 #--------------------------------------------------------------#
 # Config Vector                                  [vector_config]
