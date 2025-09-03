@@ -113,6 +113,7 @@ sources:
       - "{{ pgbackrest_log_dir }}/*.log"
     read_from: beginning
     fingerprint:
+      strategy: checksum
       lines: 2
 {% endif %}
 
