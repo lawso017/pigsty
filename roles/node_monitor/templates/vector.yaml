@@ -150,8 +150,8 @@ transforms:
     source: |
       # Add job label for dashboard filtering
       .tags.job = "vector"
-      # Add PID label (dashboard requirement)
-      .tags.pid = to_string(get_pid())
+      # Add PID label using environment variable (set by systemd)
+      .tags.pid = get_env_var("MAINPID") ?? "unknown"
       # Add additional identifying labels
       .tags.service = "vector-agent"
       .tags.node = "{{ nodename }}"
