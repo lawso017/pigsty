@@ -4,6 +4,7 @@
 #--------------------------------------------------------------#
 victoria_metrics_enabled: true       # enable victoria metrics on this node?
 victoria_metrics_port: 9090          # victoria metrics listen port (Prometheus compatible)
+victoria_metrics_vmalert_port: 8088  # vmalert listen port
 victoria_metrics_data_dir: /var/lib/victoriametrics  # data storage directory
 victoria_metrics_config_dir: /etc/victoriametrics    # configuration directory
 victoria_metrics_log_level: INFO        # log level: DEBUG, INFO, WARN, ERROR

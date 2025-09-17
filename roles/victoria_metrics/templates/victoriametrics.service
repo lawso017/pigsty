@@ -13,6 +13,7 @@ ExecStart=/usr/bin/victoria-metrics \
     -storageDataPath={{ victoria_metrics_data_dir }} \
     -loggerLevel={{ victoria_metrics_log_level }} \
     -retentionPeriod={{ victoria_metrics_retention_period }} \
+    -vmalert.proxyURL=http://127.0.0.1:{{ victoria_metrics_vmalert_port }} \
     -promscrape.config=/etc/prometheus/prometheus.yml \
     -promscrape.config.strictParse=false \
     -search.maxQueryDuration={{ victoria_metrics_search_max_query_duration }} \
