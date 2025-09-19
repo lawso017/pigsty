@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 67,
+  "id": 9,
   "links": [],
   "panels": [
     {
@@ -363,7 +363,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum(increase(caddy_http_requests_total{handler=\"$handler\",instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(caddy_http_requests_total{handler=\"$handler\",instance=~\"$instance\"}[1m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -373,7 +373,7 @@
           "useBackend": false
         }
       ],
-      "title": "Total requests",
+      "title": "Requests per minute",
       "type": "stat"
     },
     {
@@ -434,14 +434,14 @@
             "uid": "ds-prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(increase(caddy_http_request_errors_total{handler=\"$handler\",instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(caddy_http_request_errors_total{handler=\"$handler\",instance=~\"$instance\"}[1m]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Total middleware errors",
+      "title": "Middleware Errors per minute",
       "type": "stat"
     },
     {
@@ -2252,12 +2252,12 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Caddy",
   "uid": "fed94ifiv8h6oc",
-  "version": 10
+  "version": 3
 }
