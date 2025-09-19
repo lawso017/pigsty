@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 67,
+  "id": 12,
   "links": [],
   "panels": [
     {
@@ -577,7 +577,7 @@
             "h": 14,
             "w": 24,
             "x": 0,
-            "y": 28
+            "y": 49
           },
           "id": 1,
           "options": {
@@ -685,7 +685,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 43
+            "y": 22
           },
           "id": 12,
           "options": {
@@ -707,12 +707,16 @@
           "pluginVersion": "12.1.0",
           "targets": [
             {
+              "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "ha_cron_lock_acquired{ip=\"10.91.128.81\"}",
+              "expr": "ha_cron_lock_acquired{ins=~\".*fmpcron-0$\"}",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
               "interval": "",
               "legendFormat": "{{job_name}}",
               "range": true,
-              "refId": "A"
+              "refId": "A",
+              "useBackend": false
             }
           ],
           "title": "cron1",
@@ -773,7 +777,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 50
+            "y": 29
           },
           "id": 13,
           "options": {
@@ -796,7 +800,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "ha_cron_lock_acquired{ip=\"10.91.160.81\"}",
+              "expr": "ha_cron_lock_acquired{ins=~\".*fmpcron-1$\"}",
               "interval": "",
               "legendFormat": "{{job_name}}",
               "range": true,
@@ -861,7 +865,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 57
+            "y": 36
           },
           "id": 14,
           "options": {
@@ -884,7 +888,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "ha_cron_lock_acquired{ip=\"10.91.192.81\"}",
+              "expr": "ha_cron_lock_acquired{ins=~\".*fmpcron-2$\"}",
               "interval": "",
               "legendFormat": "{{job_name}}",
               "range": true,
@@ -900,19 +904,19 @@
     }
   ],
   "preload": false,
-  "refresh": "",
+  "refresh": "10s",
   "schemaVersion": 41,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-12h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "HA Cron",
   "uid": "aa3a34fb-81c7-436b-a464-369ddec28abe",
-  "version": 17
+  "version": 3
 }
