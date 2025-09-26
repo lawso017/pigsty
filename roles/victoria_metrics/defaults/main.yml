@@ -16,7 +16,7 @@ victoria_metrics_retention_period: 120d  # metrics retention in days
 victoria_metrics_memory_limit: ""    # memory limit (e.g., "4GB"), empty = auto
 victoria_metrics_storage_vmselect_cache_size: 32  # vmselect cache size in MB
 victoria_metrics_max_concurrent_inserts: 32       # max concurrent insert requests
-victoria_metrics_max_labels_per_timeseries: 30    # max labels per timeseries
+victoria_metrics_max_labels_per_timeseries: 32    # max labels per timeseries
 
 #--------------------------------------------------------------#
 # SEARCH & QUERY SETTINGS  
