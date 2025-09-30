@@ -55,6 +55,8 @@ node_admin_ssh_exchange: true     # exchange admin ssh key among node cluster
 node_admin_pk_current: true       # add current user's ssh pk to admin authorized_keys
 node_admin_pk_list: []            # ssh public keys to be added to admin user
 node_aliases: {}                  # extra shell aliases to be added, k:v dict
+node_editor: vi                   # default EDITOR for node profile
+node_prompt: '\[\033]0;\w\007\]\[\]\n\[\e[1;36m\][\D{%m-%d %T}] \[\e[1;31m\]\u\[\e[1;33m\]@\H\[\e[1;32m\]:\w \n\[\e[1;35m\]\$ \[\e[0m\]'  # bash PS1 prompt
 
 #-----------------------------------------------------------------
 # NODE_TIME

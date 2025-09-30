@@ -4,7 +4,7 @@
 #--------------------------------------------------------------#
 - name: write node etc profile
   tags: node_profile
-  copy: src="node.sh" dest="/etc/profile.d/node.sh" mode=0644
+  template: src="node.sh.j2" dest="/etc/profile.d/node.sh" mode=0644
 
 
 #--------------------------------------------------------------#
