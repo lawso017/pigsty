@@ -34,6 +34,20 @@
         - /var/log/victorialogs
 
 #--------------------------------------------------------------#
+# Disable Loki                                   [disable_loki]
+#--------------------------------------------------------------#
+- name: disable loki just in case
+  tags: [victoria_logs, disable_loki]
+  when: victoria_logs_enabled|bool
+  ignore_errors: yes
+  block:
+    - name: stop and disable loki service
+      systemd:
+        name: loki
+        state: stopped
+        enabled: false
+
+#--------------------------------------------------------------#
 # Config VictoriaLogs                         [victoria_logs_config]
 #--------------------------------------------------------------#
 - name: config victoria logs

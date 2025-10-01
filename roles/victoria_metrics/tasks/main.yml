@@ -36,6 +36,20 @@
         - /var/log/victoriametrics
 
 #--------------------------------------------------------------#
+# Disable Prometheus                                   [disable_prometheus]
+#--------------------------------------------------------------#
+- name: disable prometheus just in case
+  tags: [victoria_metrics, disable_prometheus]
+  when: victoria_metrics_enabled|bool
+  ignore_errors: yes
+  block:
+    - name: stop and disable prometheus service
+      systemd:
+        name: prometheus
+        state: stopped
+        enabled: false
+
+#--------------------------------------------------------------#
 # Config VictoriaMetrics                    [victoria_metrics_config]
 #--------------------------------------------------------------#
 - name: config victoria metrics
