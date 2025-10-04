@@ -68,5 +68,5 @@ groups:
           summary: "CRIT KafkaExporterDown {{ $labels.ins }}@{{ $labels.instance }}"
           description: |
             kafka_up[ins={{ $labels.ins }}, instance={{ $labels.instance }}] = {{ $value }} < 1
-            https://g.{{ $externalLabels.root_domain }}/d/kafka-overview
+            {{ externalURL }}/d/kafka-overview
 

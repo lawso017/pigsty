@@ -48,7 +48,7 @@ def host_replace(s):
     if 'prometheus' in REPLACEMENT and REPLACEMENT['prometheus'] != 'p.pigsty':
         s = s.replace('http://p.pigsty', SCHEME + REPLACEMENT['prometheus'])
     if 'grafana' in REPLACEMENT and REPLACEMENT['grafana'] != 'g.pigsty':
-        s = s.replace('https://g.{{ $externalLabels.root_domain }}', SCHEME + REPLACEMENT['grafana'])
+        s = s.replace('http://g.pigsty', SCHEME + REPLACEMENT['grafana'])
     return s
 
 

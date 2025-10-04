@@ -731,7 +731,7 @@ groups:
           summary: "CRIT NodeDown {{ $labels.ins }}@{{ $labels.instance }}"
           description: |
             node_up[ins={{ $labels.ins }}, instance={{ $labels.instance }}] = {{ $value }} < 1
-            https://g.{{ $externalLabels.root_domain }}/d/node-instance?var-ins={{ $labels.ins }}
+            {{ externalURL }}/d/node-instance?var-ins={{ $labels.ins }}
 
       # haproxy the load balancer
       - alert: HaproxyDown
@@ -742,7 +742,7 @@ groups:
           summary: "CRIT HaproxyDown {{ $labels.ins }}@{{ $labels.instance }}"
           description: |
             haproxy_up[ins={{ $labels.ins }}, instance={{ $labels.instance }}] = {{ $value }} < 1
-            https://g.{{ $externalLabels.root_domain }}/d/node-haproxy?var-ins={{ $labels.ins }}
+            {{ externalURL }}/d/node-haproxy?var-ins={{ $labels.ins }}
 
       # promtail the logging agent
       - alert: PromtailDown
@@ -753,7 +753,7 @@ groups:
           summary: "WARN PromtailDown {{ $labels.ins }}@{{ $labels.instance }}"
           description: |
             promtail_up[ins={{ $labels.ins }}, instance={{ $labels.instance }}] = {{ $value }} < 1
-            https://g.{{ $externalLabels.root_domain }}/d/node-instance?var-ins={{ $labels.ins }}
+            {{ externalURL }}/d/node-instance?var-ins={{ $labels.ins }}
 
       # docker the container engine
       - alert: DockerDown
@@ -764,7 +764,7 @@ groups:
           summary: "WARN DockerDown {{ $labels.ins }}@{{ $labels.instance }}"
           description: |
             docker_up[ins={{ $labels.ins }}, instance={{ $labels.instance }}] = {{ $value }} < 1
-            https://g.{{ $externalLabels.root_domain }}/d/node-instance?var-ins={{ $labels.ins }}
+            {{ externalURL }}/d/node-instance?var-ins={{ $labels.ins }}
 
       # keepalived daemon
       - alert: KeepalivedDown
@@ -775,7 +775,7 @@ groups:
           summary: "WARN KeepalivedDown {{ $labels.ins }}@{{ $labels.instance }}"
           description: |
             keepalived_up[ins={{ $labels.ins }}, instance={{ $labels.instance }}] = {{ $value }} < 1
-            https://g.{{ $externalLabels.root_domain }}/d/node-instance?var-ins={{ $labels.ins }}
+            {{ externalURL }}/d/node-instance?var-ins={{ $labels.ins }}
 
   
 
