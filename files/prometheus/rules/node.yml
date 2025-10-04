@@ -924,10 +924,10 @@ groups:
           description: |
             rate(node:ins:tcp_error{ins={{ $labels.ins }}}[1m]) = {{ $value  | printf "%.2f" }} > 1
 
-      # node:ins:tcp_retrans_ratio1m > 1e-4
+      # node:ins:tcp_retrans_ratio1m > 2e-4
       - alert: NodeTcpRetransHigh
-        expr: node:ins:tcp_retrans_ratio1m > 1e-2
-        for: 1m
+        expr: node:ins:tcp_retrans_ratio1m > 2e-2
+        for: 5m
         labels: { level: 2, severity: INFO, category: node }
         annotations:
           summary: 'INFO NodeTcpRetransHigh {{ $labels.ins }}@{{ $labels.instance }} {{ $value  | printf "%.6f" }}'
