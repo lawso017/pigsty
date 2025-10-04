@@ -37,6 +37,6 @@ groups:
           summary: "CRIT MySQLDown {{ $labels.ins }}@{{ $labels.instance }}"
           description: |
             mysql_up[ins={{ $labels.ins }}, instance={{ $labels.instance }}] = {{ $value }} < 1
-            http://g.pigsty/d/mysql-instance?var-ins={{ $labels.ins }}
+            https://g.{{ $externalLabels.root_domain }}/d/mysql-instance?var-ins={{ $labels.ins }}
 
 ...

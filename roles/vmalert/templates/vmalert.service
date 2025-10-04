@@ -16,7 +16,8 @@ ExecStart=/usr/bin/vmalert \
     -notifier.url={{ alertmanager_url }}{% endif %} \
     -rule={{ vmalert_rules_dir }}/*.yml \
     -evaluationInterval={{ vmalert_evaluation_interval }} \
-    -loggerLevel={{ vmalert_log_level }}
+    -loggerLevel={{ vmalert_log_level }} \
+    -external.label=root_domain={{ root_domain }}
 
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
