@@ -808,7 +808,7 @@ groups:
         annotations:
           summary: 'WARN NodeLoadHigh {{ $labels.ins }}@{{ $labels.instance }} {{ $value  | printf "%.2f" }}'
           description: |
-            node:ins:stdload1[ins={{ $labels.ins }}] = {{ $value  | printf "%.2f" }} > 100%
+            node:ins:stdload1[ins={{ $labels.ins }}] = {{ $value  | printf "%.2f" }} > 200%
 
 
       #==============================================================#
@@ -924,7 +924,7 @@ groups:
           description: |
             rate(node:ins:tcp_error{ins={{ $labels.ins }}}[1m]) = {{ $value  | printf "%.2f" }} > 1
 
-      # node:ins:tcp_retrans_ratio1m > 2e-4
+      # node:ins:tcp_retrans_ratio1m > 2e-2
       - alert: NodeTcpRetransHigh
         expr: node:ins:tcp_retrans_ratio1m > 2e-2
         for: 5m
@@ -932,7 +932,7 @@ groups:
         annotations:
           summary: 'INFO NodeTcpRetransHigh {{ $labels.ins }}@{{ $labels.instance }} {{ $value  | printf "%.6f" }}'
           description: |
-            node:ins:tcp_retrans_ratio1m[ins={{ $labels.ins }}] = {{ $value  | printf "%.6f" }} > 1%
+            node:ins:tcp_retrans_ratio1m[ins={{ $labels.ins }}] = {{ $value  | printf "%.6f" }} > 2%
 
       # OPTIONAL: tcp conn high
       # OPTIONAL: udp traffic high
