@@ -802,7 +802,7 @@ groups:
       #==============================================================#
       # node load high : 1m avg standard load > 100% for 3m
       - alert: NodeLoadHigh
-        expr: node:ins:stdload1 > 1
+        expr: node:ins:stdload1 > 2
         for: 1m
         labels: { level: 1, severity: WARN, category: node }
         annotations:
