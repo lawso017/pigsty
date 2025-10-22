@@ -546,12 +546,21 @@
                 "0": {
                   "color": "red",
                   "index": 0,
-                  "text": "Fail"
+                  "text": "0 Successful"
                 },
                 "1": {
-                  "color": "green",
+                  "color": "orange",
                   "index": 1,
-                  "text": "Success"
+                  "text": "1 Successful"
+                },
+                "2": {
+                  "color": "yellow",
+                  "index": 2,
+                  "text": "2 Successful"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "3 Successful"
                 }
               },
               "type": "value"
@@ -597,7 +606,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "min by(job_name) (ha_cron_job_success)",
+          "expr": "sum by(job_name) (ha_cron_job_success)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1087,12 +1096,12 @@
     "list": []
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-2d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "HA Cron",
   "uid": "aa3a34fb-81c7-436b-a464-369ddec28abe",
-  "version": 7
+  "version": 8
 }
