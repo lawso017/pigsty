@@ -800,15 +800,15 @@ groups:
       #==============================================================#
       #                       Node : Schedule                        #
       #==============================================================#
-      # node load high : 1m avg standard load > 100% for 3m
+      # node load high : 1m avg standard load > 300% for 1m
       - alert: NodeLoadHigh
-        expr: node:ins:stdload1 > 2
+        expr: node:ins:stdload1 > 3
         for: 1m
         labels: { level: 1, severity: WARN, category: node }
         annotations:
           summary: 'WARN NodeLoadHigh {{ $labels.ins }}@{{ $labels.instance }} {{ $value  | printf "%.2f" }}'
           description: |
-            node:ins:stdload1[ins={{ $labels.ins }}] = {{ $value  | printf "%.2f" }} > 200%
+            node:ins:stdload1[ins={{ $labels.ins }}] = {{ $value  | printf "%.2f" }} > 300%
 
 
       #==============================================================#
