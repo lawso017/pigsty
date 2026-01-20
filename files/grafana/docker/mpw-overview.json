@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 83,
+  "id": 71,
   "links": [
     {
       "asDropdown": false,
@@ -1152,32 +1152,22 @@
         "type": "prometheus",
         "uid": "ds-prometheus"
       },
-      "description": "Percentage of responses with 4xx status code.",
+      "description": "Total requests handled in the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "fixed"
           },
           "mappings": [],
-          "noValue": "0%",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 0.05
-              },
-              {
-                "color": "red",
-                "value": 0.1
               }
             ]
-          },
-          "unit": "percentunit"
+          }
         },
         "overrides": []
       },
@@ -1187,11 +1177,11 @@
         "x": 16,
         "y": 13
       },
-      "id": 24,
+      "id": 35,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -1209,13 +1199,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\", code=~\"4..\"}[5m])) / sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\"}[5m]))",
+          "expr": "sum(increase(caddy_http_requests_total{handler=\"reverse_proxy\"}[1m]))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "4xx Response %",
+      "title": "Requests [1m]",
       "type": "stat"
     },
     {
@@ -1223,14 +1213,15 @@
         "type": "prometheus",
         "uid": "ds-prometheus"
       },
-      "description": "Percentage of responses with 5xx status code.",
+      "description": "Number of middleware errors per interval.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "mappings": [],
-          "noValue": "0%",
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1239,16 +1230,11 @@
                 "value": 0
               },
               {
-                "color": "orange",
-                "value": 0.01
-              },
-              {
                 "color": "red",
-                "value": 0.05
+                "value": 1
               }
             ]
-          },
-          "unit": "percentunit"
+          }
         },
         "overrides": []
       },
@@ -1258,7 +1244,7 @@
         "x": 20,
         "y": 13
       },
-      "id": 25,
+      "id": 34,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1280,13 +1266,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\", code=~\"5..\"}[5m])) / sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\"}[5m]))",
+          "expr": "sum(increase(caddy_http_request_errors_total{handler=\"reverse_proxy\"}[1m]))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "5xx Response %",
+      "title": "Middleware Errors [1m]",
       "type": "stat"
     },
     {
@@ -1542,15 +1528,14 @@
         "type": "prometheus",
         "uid": "ds-prometheus"
       },
-      "description": "Number of middleware errors per interval.",
+      "description": "Percentage of responses with 4xx status code.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 0,
           "mappings": [],
-          "noValue": "0",
+          "noValue": "0%",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1559,11 +1544,16 @@
                 "value": 0
               },
               {
+                "color": "yellow",
+                "value": 0.05
+              },
+              {
                 "color": "red",
-                "value": 1
+                "value": 0.1
               }
             ]
-          }
+          },
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -1573,7 +1563,7 @@
         "x": 16,
         "y": 18
       },
-      "id": 34,
+      "id": 24,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1595,13 +1585,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(increase(caddy_http_request_errors_total{handler=\"reverse_proxy\"}[5m]))",
+          "expr": "sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\", code=~\"4..\"}[5m])) / sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\"}[5m]))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Middleware Errors [5m]",
+      "title": "4xx Response %",
       "type": "stat"
     },
     {
@@ -1609,22 +1599,32 @@
         "type": "prometheus",
         "uid": "ds-prometheus"
       },
-      "description": "Total requests handled in the last hour.",
+      "description": "Percentage of responses with 5xx status code.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "fixed"
+            "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0%",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
               }
             ]
-          }
+          },
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -1634,11 +1634,11 @@
         "x": 20,
         "y": 18
       },
-      "id": 35,
+      "id": 25,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -1656,13 +1656,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(increase(caddy_http_requests_total{handler=\"reverse_proxy\"}[1h]))",
+          "expr": "sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\", code=~\"5..\"}[5m])) / sum(increase(caddy_http_response_duration_seconds_count{handler=\"reverse_proxy\"}[5m]))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Requests [1h]",
+      "title": "5xx Response %",
       "type": "stat"
     },
     {
@@ -1780,7 +1780,7 @@
             "uid": "ds-prometheus"
           },
           "editorMode": "code",
-          "expr": "max(fmp_delayed_job_queue_depth{queue=\"default\"})",
+          "expr": "max(fmp_delayed_job_queue_depth{queue=\"quick\"})",
           "hide": false,
           "instant": false,
           "legendFormat": "quick",
@@ -1918,12 +1918,12 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "MPW Overview",
   "uid": "mpw-overview",
-  "version": 4
+  "version": 5
 }
