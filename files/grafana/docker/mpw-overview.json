@@ -120,10 +120,23 @@
           "expr": "max(fmp_stale_status_cache_count)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "__auto",
+          "legendFormat": "Equipment",
           "range": true,
           "refId": "A",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "editorMode": "code",
+          "expr": "max(fmp_stale_employee_cache_count)",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Employees",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Stale Cache Orgs",
@@ -1918,12 +1931,12 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "MPW Overview",
   "uid": "mpw-overview",
-  "version": 5
+  "version": 6
 }
