@@ -42,7 +42,7 @@
             "uid": "ds-prometheus"
           },
           "editorMode": "code",
-          "expr": "count(up{job=\"node\",ins!=\"\",cls=~\"$cls\"})",
+          "expr": "count(count by (ins) (up{job=\"node\",ins!=\"\",cls=~\"$cls\"}))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -107,7 +107,7 @@
             "uid": "ds-prometheus"
           },
           "editorMode": "code",
-          "expr": "count(up{job=\"node\",ins!=\"\",cls=~\"$cls\"}) - sum(up{job=\"node\",ins!=\"\",cls=~\"$cls\"})",
+          "expr": "count(count by (ins) (up{job=\"node\",ins!=\"\",cls=~\"$cls\"})) - count(count by (ins) (up{job=\"node\",ins!=\"\",cls=~\"$cls\"} == 1))",
           "format": "table",
           "instant": true,
           "range": false,
