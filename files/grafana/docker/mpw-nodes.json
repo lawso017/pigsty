@@ -42,7 +42,7 @@
             "uid": "ds-prometheus"
           },
           "editorMode": "code",
-          "expr": "count(up{job=\"node\",cls=~\"$cls\"})",
+          "expr": "count(up{job=\"node\",ins!=\"\",cls=~\"$cls\"})",
           "format": "table",
           "instant": true,
           "range": false,
@@ -107,7 +107,7 @@
             "uid": "ds-prometheus"
           },
           "editorMode": "code",
-          "expr": "count(up{job=\"node\",cls=~\"$cls\"}) - sum(up{job=\"node\",cls=~\"$cls\"})",
+          "expr": "count(up{job=\"node\",ins!=\"\",cls=~\"$cls\"}) - sum(up{job=\"node\",ins!=\"\",cls=~\"$cls\"})",
           "format": "table",
           "instant": true,
           "range": false,
@@ -314,7 +314,7 @@
             "uid": "ds-prometheus"
           },
           "editorMode": "code",
-          "expr": "max by (ins, cls, ip) (up{job=\"node\",cls=~\"$cls\"})",
+          "expr": "max by (ins, cls, ip) (up{job=\"node\",ins!=\"\",cls=~\"$cls\"})",
           "format": "table",
           "instant": true,
           "range": false,
@@ -822,7 +822,7 @@
           "uid": "ds-prometheus"
         },
         "query": {
-          "query": "label_values(up{job=\"node\"}, cls)",
+          "query": "label_values(up{job=\"node\",ins!=\"\"}, cls)",
           "refId": "StandardVariableQuery"
         },
         "includeAll": true,
@@ -838,7 +838,7 @@
         },
         "refresh": 2,
         "sort": 1,
-        "definition": "label_values(up{job=\"node\"}, cls)"
+        "definition": "label_values(up{job=\"node\",ins!=\"\"}, cls)"
       }
     ]
   },
