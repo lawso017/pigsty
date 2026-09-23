@@ -1,0 +1,226 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "datasource", "uid": "grafana" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": { "limit": 100, "matchAny": false, "tags": [], "type": "dashboard" },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Killed / cancelled Postgres queries from the logs (state_code 57014 query_canceled, 57P01 admin_shutdown). pg_stat_statements never records these, so this is the only faithful view. Filtered to the app user on pg-fmp; expand a log row to read the statement (SQL). #23",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+      "description": "Cancellations/terminations per interval, split by message: statement timeout (a report hit the cap), user request (a manual pg_cancel_backend), administrator command (pg_terminate_backend).",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "normal" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "orange", "value": 0 } ] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 18, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": { "calcs": [ "sum" ], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+          "editorMode": "code",
+          "expr": "src:postgres cls:$cls user:fmp_admin (state_code:57014 OR state_code:57P01) | stats by (_time:$__interval, _msg) count()",
+          "queryType": "statsRange",
+          "refId": "A"
+        }
+      ],
+      "title": "Killed / cancelled queries over time (by type)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+      "description": "Total kills in the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [ { "color": "green", "value": 0 }, { "color": "orange", "value": 1 }, { "color": "red", "value": 10 } ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": [ "sum" ], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+          "editorMode": "code",
+          "expr": "src:postgres cls:$cls user:fmp_admin (state_code:57014 OR state_code:57P01) | stats by (_time:$__interval) count()",
+          "queryType": "statsRange",
+          "refId": "A"
+        }
+      ],
+      "title": "Kills in range",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+      "description": "Which node the killed queries ran on. Report reads should be on the replicas; a spike on the primary is worth a look.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "normal" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": 0 } ] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "id": 3,
+      "options": {
+        "legend": { "calcs": [ "sum" ], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+          "editorMode": "code",
+          "expr": "src:postgres cls:$cls user:fmp_admin (state_code:57014 OR state_code:57P01) | stats by (_time:$__interval, ins) count()",
+          "queryType": "statsRange",
+          "refId": "A"
+        }
+      ],
+      "title": "Kills by node",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+      "description": "Each killed query. Expand a row (log details) to read the statement (SQL), dbname, pid and remote_host.",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 16 },
+      "id": 4,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+          "editorMode": "code",
+          "expr": "src:postgres cls:$cls user:fmp_admin (state_code:57014 OR state_code:57P01)",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent killed queries (expand a row for the SQL)",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [ "MPW", "PGSQL", "Logs" ],
+  "templating": {
+    "list": [
+      {
+        "current": { "text": "pg-fmp", "value": "pg-fmp" },
+        "datasource": { "type": "victoriametrics-logs-datasource", "uid": "ds-victorialogs" },
+        "definition": "",
+        "includeAll": false,
+        "label": "Cluster",
+        "name": "cls",
+        "options": [],
+        "query": {
+          "field": "cls",
+          "limit": 25,
+          "query": "",
+          "refId": "VictoriaLogsVariableQueryEditor-VariableQuery",
+          "type": "fieldValue"
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PG Killed / Cancelled Queries",
+  "uid": "mpw-pg-killed-queries",
+  "version": 1
+}
